@@ -1,0 +1,78 @@
+<!doctype html>
+<link href='dist/horsey.css' rel='stylesheet' type='text/css' />
+<link href='example/example.css' rel='stylesheet' type='text/css' />
+<title>horsey</title>
+<h1>horsey</h1>
+<h3>Progressive and customizable autocomplete component</h3>
+<a href='https://github.com/bevacqua/horsey'>
+  <img class='gh-fork' src='https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67' alt='Fork me on GitHub' data-canonical-src='https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png' />
+</a>
+<div class='examples'>
+  <div class='parent'>
+    <label for='hy'>Enter the name of a fruit: </label>
+    <input id='hy'/>
+    <pre>
+      <code>
+horsey(input, {
+  suggestions: ['banana', 'apple', 'orange']
+});
+      </code>
+    </pre>
+  </div>
+</div>
+  <div class='parent'>
+    <label for='ly'>Lazy load the fruits, useful for AJAX! <i>(loading starts when the field is focused)</i></label>
+    <div><i id='lyr'>Being lazy...</i></div>
+    <input id='ly'/>
+    <pre>
+      <code>
+horsey(input, {
+  suggestions: function (done) {
+    setTimeout(function () {
+      done(['banana', 'apple', 'orange']);
+    }, 2000);
+  }
+});
+      </code>
+    </pre>
+  </div>
+  <div class='parent'>
+    <label for='kv'>You can also use "key value pairs": </label>
+    <input id='kv'/>
+    <pre>
+      <code>
+horsey(input, {
+  suggestions: [
+    { value: 'banana', text: 'Bananas from Amazon Rainforest' },
+    { value: 'apple', text: 'Red apples from New Zealand' },
+    { value: 'orange', text: 'Oranges from Moscow' },
+    { value: 'lemon', text: 'Juicy lemons from Amalfitan Coast' }
+  ]
+});
+      </code>
+    </pre>
+  </div>
+  <div class='parent'>
+    <label for='ig'>But why stop there? You can render the suggestion however you like! </label>
+    <input id='ig'/>
+    <pre>
+      <code>
+horsey(input, {
+  suggestions: [
+    { value: 'banana', text: 'Bananas from Amazon Rainforest' },
+    { value: 'apple', text: 'Red apples from New Zealand' },
+    { value: 'orange', text: 'Oranges from Moscow' },
+    { value: 'lemon', text: 'Juicy lemons from Amalfitan Coast' }
+  ],
+  render: function (li, suggestion) {
+    var image = '&lt;img class="autofruit" src="example/fruits/' + suggestion.value + '.png" /&gt; ';
+    li.innerHTML = image + suggestion.text;
+  }
+});
+      </code>
+    </pre>
+  </div>
+</div>
+<h3>Get it on GitHub! <a href='https://github.com/bevacqua/horsey'>bevacqua/horsey</a></h3>
+<script src='dist/horsey.js'></script>
+<script src='example/example.js'></script>

@@ -1,0 +1,11 @@
+{
+  "name": "horsey",
+  "version": "0.0.0",
+  "description": "Progressive and customizable autocomplete component",
+  "main": "dist/horsey.js",
+  "homepage": "https://github.com/bevacqua/horsey",
+  "authors": [
+    "Nicolas Bevacqua <nicolasbevacqua@gmail.com>"
+  ],
+  "license": "MIT"
+}
