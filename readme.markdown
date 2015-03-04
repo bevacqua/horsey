@@ -12,7 +12,7 @@ You can see a [live demo here][3].
 
 # Inspiration
 
-I needed a fast, easy to use, and reliable autocomplete library. The ones I stumbled upon were too bloated, too dependant on JavaScript, too opinionated, or provided an unfriendly human experience.
+I needed a fast, easy to use, and reliable autocomplete library. The ones I stumbled upon were too bloated, too opinionated, or provided an unfriendly human experience.
 
 The goal is to produce a framework-agnostic autocomplete that is easily integrated into your favorite MVC framework, that doesn't translate into a significant addition to your codebase, and that's **enjoyable to work with**. Horsey shares the modular design philosophy of [Rome, the datetime picker][1]. Furthermore, it plays well with [Insignia, the tag editor][2] component, and pretty much any other well-delimited component out there.
 
