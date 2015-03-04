@@ -235,6 +235,14 @@ Hides the autocomplete list.
 
 Unbind horsey-related events from the `input`, remove the autocomplete list. It's like `horsey` was never here.
 
+# Events
+
+Once you've instantiated a `horsey`, some propietary synthetic events will be emitted on the provided `input`.
+
+Name              | Description
+------------------|---------------------------------------------------------------
+`horsey-selected` | Fired after a suggestion is selected from the autocomplete
+
 # License
 
 MIT
