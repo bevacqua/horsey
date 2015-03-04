@@ -1,3 +1,8 @@
+# 1.0.3 Hack A Ton
+
+- Fixed a bug where the list would still be considered to be _"visible"_ if every item had been filtered out
+- Fixed a bug where pressing <kbd>Enter</kbd> would display the autocomplete list
+
 # 1.0.2 Milleanial Zombie Escapade
 
 - Fixed a bug where empty `getText()` or `getValue()` results would cause issues when filtering suggestions

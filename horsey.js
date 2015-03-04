@@ -22,6 +22,7 @@ function horsey (input, options) {
   var selection = null;
   var oneload = once(loading);
   var eye;
+  var deferredFiltering = defer(filtering);
 
   if (o.autoHideOnBlur === void 0) { o.autoHideOnBlur = true; }
   if (o.autoHideOnClick === void 0) { o.autoHideOnClick = true; }
@@ -187,6 +188,25 @@ function horsey (input, options) {
     if (!selection) {
       move();
     }
+    if (!selection) {
+      hide();
+    }
+  }
+
+  function deferredKeydown (e) {
+    var which = e.which || e.keyCode;
+    if (which === KEY_ENTER) {
+      return;
+    }
+    deferredFiltering();
+  }
+
+  function deferredShow (e) {
+    var which = e.which || e.keyCode;
+    if (which === KEY_ENTER) {
+      return;
+    }
+    setTimeout(show, 0);
   }
 
   function horseyEventTarget (e) {
@@ -218,12 +238,10 @@ function horsey (input, options) {
 
   function inputEvents (remove) {
     var op = remove ? 'remove' : 'add';
-    var deferredShow = defer(show);
-    var deferredFiltering = defer(filtering);
     crossvent[op](input, 'keypress', deferredShow);
     crossvent[op](input, 'keypress', deferredFiltering);
     crossvent[op](input, 'paste', deferredFiltering);
-    crossvent[op](input, 'keydown', deferredFiltering);
+    crossvent[op](input, 'keydown', deferredKeydown);
     crossvent[op](input, 'keydown', keydown);
     if (o.autoHideOnBlur) { crossvent[op](document.documentElement, 'focus', hideOnBlur, true); }
     if (o.autoHideOnClick) { crossvent[op](document, 'click', hideOnClick); }
