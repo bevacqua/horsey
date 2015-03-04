@@ -217,8 +217,9 @@ function horsey (input, options) {
 
   function inputEvents (remove) {
     var op = remove ? 'remove' : 'add';
+    var deferredShow = defer(show);
     var deferredFiltering = defer(filtering);
-    crossvent[op](input, 'keypress', show);
+    crossvent[op](input, 'keypress', deferredShow);
     crossvent[op](input, 'keypress', deferredFiltering);
     crossvent[op](input, 'paste', deferredFiltering);
     crossvent[op](input, 'keydown', deferredFiltering);

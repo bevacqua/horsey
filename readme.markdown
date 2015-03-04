@@ -8,7 +8,7 @@ Browser support includes every sane browser and **IE7+**.
 
 You can see a [live demo here][3].
 
-[![screenshot.png][4]][3]
+[![screenshot.png][5]][3]
 
 # Inspiration
 
@@ -243,3 +243,4 @@ MIT
 [2]: https://github.com/bevacqua/insignia
 [3]: http://bevacqua.github.io/horsey
 [4]: https://github.com/bevacqua/fuzzysearch
+[5]: http://i.imgur.com/imDFC0C.png
