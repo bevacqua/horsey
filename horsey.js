@@ -73,6 +73,7 @@ function horsey (input, options) {
       set(getValue(suggestion));
       hide();
       input.focus();
+      crossvent.fabricate(input, 'horsey-selected');
     }
 
     function filterItem () {
@@ -245,7 +246,9 @@ function horsey (input, options) {
   }
 
   function defaultFilter (q, suggestion) {
-    return fuzzysearch(q, getText(suggestion).toLowerCase()) || fuzzysearch(q, getValue(suggestion).toLowerCase());
+    var text = getText(suggestion) || '';
+    var value = getValue(suggestion) || '';
+    return fuzzysearch(q, text.toLowerCase()) || fuzzysearch(q, value.toLowerCase());
   }
 }
 
