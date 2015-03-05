@@ -1,3 +1,7 @@
+# 1.0.4 Fuzzy Memory
+
+- Bumped `fuzzysearch` to `@1.0.2`
+
 # 1.0.3 Hack A Ton
 
 - Fixed a bug where the list would still be considered to be _"visible"_ if every item had been filtered out
