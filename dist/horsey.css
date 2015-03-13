@@ -1,6 +1,7 @@
 .sey-list {
   display: none;
   position: absolute;
+  padding: 0;
   list-style-type: none;
   box-shadow: 1px 2px 6px;
   background-color: #fff;
