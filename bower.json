@@ -1,6 +1,6 @@
 {
   "name": "horsey",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Progressive and customizable autocomplete component",
   "main": "dist/horsey.js",
   "homepage": "https://github.com/bevacqua/horsey",
