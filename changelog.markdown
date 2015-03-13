@@ -1,3 +1,7 @@
+# 1.0.5 Balloon Motorcade
+
+- `.sey-list` resets browser default padding on the autocomplete list `<ul>` element
+
 # 1.0.4 Fuzzy Memory
 
 - Bumped `fuzzysearch` to `@1.0.2`
