@@ -1,3 +1,7 @@
+# 1.1.1 Cross Polinize
+
+- Updated `crossvent` to `1.3.1`
+
 # 1.1.0 Ball Drop
 
 - Introduced `refreshPosition` API to simplify positioning below moving inputs
