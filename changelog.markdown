@@ -1,3 +1,7 @@
+# 1.1.0 Ball Drop
+
+- Introduced `refreshPosition` API to simplify positioning below moving inputs
+
 # 1.0.5 Balloon Motorcade
 
 - `.sey-list` resets browser default padding on the autocomplete list `<ul>` element

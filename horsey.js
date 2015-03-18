@@ -44,7 +44,8 @@ function horsey (input, options) {
     clear: clear,
     show: show,
     hide: hide,
-    destroy: destroy
+    destroy: destroy,
+    refreshPosition: eye.refresh
   };
 
   function loading () {

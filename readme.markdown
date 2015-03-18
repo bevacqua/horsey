@@ -231,6 +231,10 @@ Shows the autocomplete list.
 
 Hides the autocomplete list.
 
+### `.refreshPosition()`
+
+Updates the position of the autocomplete list relative to the position of the input. Only necessary when the input is moved.
+
 ### `.destroy()`
 
 Unbind horsey-related events from the `input`, remove the autocomplete list. It's like `horsey` was never here.
