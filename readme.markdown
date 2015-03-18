@@ -239,6 +239,26 @@ Updates the position of the autocomplete list relative to the position of the in
 
 Unbind horsey-related events from the `input`, remove the autocomplete list. It's like `horsey` was never here.
 
+### `.defaultRenderer`
+
+The default `render` method
+
+### `.defaultGetText`
+
+The default `getText` method
+
+### `.defaultGetValue`
+
+The default `getValue` method
+
+### `.defaultSetter`
+
+The default `set` method
+
+### `.defaultFilter`
+
+The default `filter` method
+
 # Events
 
 Once you've instantiated a `horsey`, some propietary synthetic events will be emitted on the provided `input`.

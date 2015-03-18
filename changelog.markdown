@@ -1,3 +1,11 @@
+# 1.2.0 Exposé
+
+- Exposed `defaultRenderer` method
+- Exposed `defaultGetText` method
+- Exposed `defaultGetValue` method
+- Exposed `defaultSetter` method
+- Exposed `defaultFilter` method
+
 # 1.1.1 Cross Polinize
 
 - Updated `crossvent` to `1.3.1`

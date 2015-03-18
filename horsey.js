@@ -45,7 +45,12 @@ function horsey (input, options) {
     show: show,
     hide: hide,
     destroy: destroy,
-    refreshPosition: eye.refresh
+    refreshPosition: eye.refresh,
+    defaultRenderer: defaultRenderer,
+    defaultGetText: defaultGetText,
+    defaultGetValue: defaultGetValue,
+    defaultSetter: defaultSetter,
+    defaultFilter: defaultFilter
   };
 
   function loading () {
