@@ -8,7 +8,7 @@ var KEY_ESC = 27;
 var KEY_UP = 38;
 var KEY_DOWN = 40;
 
-function horsey (input, options) {
+function horsey (el, options) {
   var o = options || {};
   var parent = o.appendTo || document.body;
   var render = o.render || defaultRenderer;
@@ -26,18 +26,19 @@ function horsey (input, options) {
 
   if (o.autoHideOnBlur === void 0) { o.autoHideOnBlur = true; }
   if (o.autoHideOnClick === void 0) { o.autoHideOnClick = true; }
+  if (o.autoShowOnUpDown === void 0) { o.autoShowOnUpDown = el.tagName === 'INPUT'; }
 
   parent.appendChild(ul);
-  input.setAttribute('autocomplete', 'off');
+  el.setAttribute('autocomplete', 'off');
 
   if (Array.isArray(suggestions)) {
     loaded(suggestions);
   } else if (typeof suggestions === 'function') {
-    crossvent.add(input, 'focus', oneload);
+    crossvent.add(el, 'focus', oneload);
   }
 
   inputEvents();
-  eye = bullseye(ul, input);
+  eye = bullseye(ul, el, { caret: el.tagName === 'TEXTAREA' });
 
   return {
     add: add,
@@ -45,11 +46,16 @@ function horsey (input, options) {
     show: show,
     hide: hide,
     destroy: destroy,
-    refreshPosition: eye.refresh
+    refreshPosition: eye.refresh,
+    defaultRenderer: defaultRenderer,
+    defaultGetText: defaultGetText,
+    defaultGetValue: defaultGetValue,
+    defaultSetter: defaultSetter,
+    defaultFilter: defaultFilter
   };
 
   function loading () {
-    crossvent.remove(input, 'focus', oneload);
+    crossvent.remove(el, 'focus', oneload);
     suggestions(loaded);
   }
 
@@ -67,19 +73,19 @@ function horsey (input, options) {
     var li = tag('li', 'sey-item');
     render(li, suggestion);
     crossvent.add(li, 'click', select);
-    crossvent.add(li, 'filter', filterItem);
+    crossvent.add(li, 'horsey-filter', filterItem);
     ul.appendChild(li);
     return li;
 
     function select () {
       set(getValue(suggestion));
       hide();
-      input.focus();
-      crossvent.fabricate(input, 'horsey-selected');
+      el.focus();
+      crossvent.fabricate(el, 'horsey-selected');
     }
 
     function filterItem () {
-      var value = input.value;
+      var value = el.value;
       if (filter(value, suggestion)) {
         li.className = li.className.replace(/ sey-hide/g, '');
       } else if (!hidden(li)) {
@@ -103,6 +109,7 @@ function horsey (input, options) {
     if (!visible()) {
       ul.className += ' sey-show';
       eye.refresh();
+      crossvent.fabricate(el, 'horsey-show');
     }
   }
 
@@ -144,31 +151,40 @@ function horsey (input, options) {
   function hide () {
     ul.className = ul.className.replace(/ sey-show/g, '');
     unselect();
+    crossvent.fabricate(el, 'horsey-hide');
   }
 
   function keydown (e) {
     var shown = visible();
     var which = e.which || e.keyCode;
     if (which === KEY_DOWN) {
-      show();
+      if (o.autoShowOnUpDown) {
+        show();
+      }
       if (shown) {
         move();
+        stop(e);
       }
-      stop(e);
     } else if (which === KEY_UP) {
-      show();
-      move(true);
-      stop(e);
-    } else if (which === KEY_ENTER && shown) {
-      if (selection) {
-        crossvent.fabricate(selection, 'click');
-      } else {
-        hide();
+      if (o.autoShowOnUpDown) {
+        show();
       }
-      stop(e);
-    } else if (which === KEY_ESC) {
-      hide();
-      stop(e);
+      if (shown) {
+        move(true);
+        stop(e);
+      }
+    } else if (shown) {
+      if (which === KEY_ENTER) {
+        if (selection) {
+          crossvent.fabricate(selection, 'click');
+        } else {
+          hide();
+        }
+        stop(e);
+      } else if (which === KEY_ESC) {
+        hide();
+        stop(e);
+      }
     }
   }
 
@@ -183,7 +199,7 @@ function horsey (input, options) {
     }
     var li = ul.firstChild;
     while (li) {
-      crossvent.fabricate(li, 'filter');
+      crossvent.fabricate(li, 'horsey-filter');
       li = li.nextSibling;
     }
     if (!selection) {
@@ -212,7 +228,7 @@ function horsey (input, options) {
 
   function horseyEventTarget (e) {
     var target = e.target;
-    if (target === input) {
+    if (target === el) {
       return true;
     }
     while (target) {
@@ -239,11 +255,11 @@ function horsey (input, options) {
 
   function inputEvents (remove) {
     var op = remove ? 'remove' : 'add';
-    crossvent[op](input, 'keypress', deferredShow);
-    crossvent[op](input, 'keypress', deferredFiltering);
-    crossvent[op](input, 'paste', deferredFiltering);
-    crossvent[op](input, 'keydown', deferredKeydown);
-    crossvent[op](input, 'keydown', keydown);
+    crossvent[op](el, 'keypress', deferredShow);
+    crossvent[op](el, 'keypress', deferredFiltering);
+    crossvent[op](el, 'paste', deferredFiltering);
+    crossvent[op](el, 'keydown', deferredKeydown);
+    crossvent[op](el, 'keydown', keydown);
     if (o.autoHideOnBlur) { crossvent[op](document.documentElement, 'focus', hideOnBlur, true); }
     if (o.autoHideOnClick) { crossvent[op](document, 'click', hideOnClick); }
     if (form) { crossvent[op](form, 'submit', hide); }
@@ -253,11 +269,11 @@ function horsey (input, options) {
     inputEvents(true);
     eye.destroy();
     parent.removeChild(ul);
-    crossvent.remove(input, 'focus', oneload);
+    crossvent.remove(el, 'focus', oneload);
   }
 
   function defaultSetter (value) {
-    input.value = value;
+    el.value = value;
   }
 
   function defaultRenderer (li, suggestion) {

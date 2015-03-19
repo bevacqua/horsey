@@ -2,6 +2,7 @@
   display: none;
   position: absolute;
   padding: 0;
+  margin-right: 10px;
   list-style-type: none;
   box-shadow: 1px 2px 6px;
   background-color: #fff;
@@ -15,6 +16,9 @@
 }
 .sey-item {
   cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   padding: 7px;
 }
 .sey-item:hover {
