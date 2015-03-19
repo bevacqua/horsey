@@ -268,7 +268,7 @@ function horsey (el, options) {
   function destroy () {
     inputEvents(true);
     eye.destroy();
-    parent.removeChild(ul);
+    if (parent.contains(ul)) { parent.removeChild(ul); }
     crossvent.remove(el, 'focus', oneload);
   }
 

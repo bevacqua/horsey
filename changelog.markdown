@@ -1,3 +1,7 @@
+# 2.0.2 Jordania
+
+- DOM safety check when destroying `horsey` instances
+
 # 2.0.1 Arena for the Net
 
 - Explicit support for `<textarea>` elements
