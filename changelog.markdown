@@ -1,6 +1,7 @@
 # 2.0.0 Arena for the Net
 
 - Explicit support for `<textarea>` elements
+- Added `autoShowOnUpDown` option
 
 # 1.2.0 Exposé
 
