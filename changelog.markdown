@@ -1,4 +1,4 @@
-# 2.0.0 Arena for the Net
+# 2.0.1 Arena for the Net
 
 - Explicit support for `<textarea>` elements
 - Added `autoShowOnUpDown` option
