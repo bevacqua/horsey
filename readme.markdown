@@ -23,6 +23,7 @@ The goal is to produce a framework-agnostic autocomplete that is easily integrat
 - Progressively enhanced
 - Extensive browser support
 - Fuzzy searching
+- Supports `<input>` and `<textarea>` elements
 
 # Install
 
@@ -40,7 +41,7 @@ bower install horsey --save
 
 # Options
 
-Entry point is `horsey(input, options)`. Configuration options are detailed below. This method [returns a small API](#api) into the `horsey` autocomplete list instance.
+Entry point is `horsey(el, options)`. Configuration options are detailed below. This method [returns a small API](#api) into the `horsey` autocomplete list instance.
 
 ### `suggestions`
 
@@ -53,7 +54,7 @@ Alternatively, the `suggestions` can be a function. In this case, the function w
 The example below would create an instance with a predefined set of suggestions.
 
 ```js
-horsey(input, {
+horsey(el, {
   suggestions: ['sports', 'drama', 'romantic comedy', 'science fiction', 'thriller']
 });
 ```
@@ -63,7 +64,7 @@ horsey(input, {
 Here's how you would lazy load your suggestions, except, you know, using actual AJAX calls. Note that this method is called a single time.
 
 ```js
-horsey(input, {
+horsey(el, {
   suggestions: function (done) {
     setTimeout(function () {
       done(['sports', 'drama', 'romantic comedy', 'science fiction', 'thriller']);
@@ -89,7 +90,7 @@ function defaultFilter (q, suggestion) {
 The example below would always display every suggestion, except when the user input looks like `'seahawks/managers'`, in which case it would only return suggestions matching the `'seahawks'` team.
 
 ```js
-horsey(input, {
+horsey(el, {
   filter: function (q, suggestion) {
     var parts = q.split('/');
     return parts.length === 1 ? true : suggestion.team === parts[0];
@@ -114,7 +115,7 @@ function defaultGetText (suggestion) {
 The example below would return a model's `displayName` for convenience.
 
 ```js
-horsey(input, {
+horsey(el, {
   getText: function (suggestion) {
     return suggestion.displayName;
   }
@@ -123,7 +124,7 @@ horsey(input, {
 
 ### `getValue`
 
-A function that returns the value to be given to the `input` when a suggestion is selected.
+A function that returns the value to be given to the `el` when a suggestion is selected.
 
 ###### Default
 
@@ -138,7 +139,7 @@ function defaultGetValue (suggestion) {
 The example below would return a model's `username` for convenience.
 
 ```js
-horsey(input, {
+horsey(el, {
   getValue: function (suggestion) {
     return suggestion.username;
   }
@@ -153,7 +154,7 @@ A function that gets called when an option has been selected on the autocomplete
 
 ```js
 function defaultSetter (value) {
-  input.value = value;
+  el.value = value;
 }
 ```
 
@@ -162,20 +163,24 @@ function defaultSetter (value) {
 The example below would append values instead of overwriting them.
 
 ```js
-horsey(input, {
+horsey(el, {
   set: function (value) {
-    input.value += value + ', ';
+    el.value += value + ', ';
   }
 });
 ```
 
 ### `autoHideOnClick`
 
-Hides the autocomplete list whenever something other than the `input` or any child of the autocomplete's `<ul>` element is clicked. Defaults to `true`.
+Hides the autocomplete list whenever something other than the `el` or any child of the autocomplete's `<ul>` element is clicked. Defaults to `true`.
 
 ### `autoHideOnBlur`
 
-Hides the autocomplete list whenever something other than the `input` or any child of the autocomplete's `<ul>` element is focused. Defaults to `true`.
+Hides the autocomplete list whenever something other than the `el` or any child of the autocomplete's `<ul>` element is focused. Defaults to `true`.
+
+### `autoShowOnUpDown`
+
+Displays the autocomplete list whenever the up arrow key or the down arrow key are pressed. Defaults to `el.tagName === 'INPUT'`.
 
 ### `render`
 
@@ -194,7 +199,7 @@ function defaultRenderer (li, suggestion) {
 The example below would assign arbitrary HTML found in the `suggestion` model to each list item. Note that rendering doesn't necessarily have to be synchronous.
 
 ```js
-horsey(input, {
+horsey(el, {
   render: function (li, suggestion) {
     li.innerHTML = suggestion.html;
   }
@@ -209,7 +214,7 @@ Defaults to `document.body`.
 
 ### `form`
 
-The `form` the input belongs to. If provided, the autocomplete list will be hidden whenever the form is submitted.
+The `form` your `el` belongs to. If provided, the autocomplete list will be hidden whenever the form is submitted.
 
 # API
 
@@ -233,11 +238,11 @@ Hides the autocomplete list.
 
 ### `.refreshPosition()`
 
-Updates the position of the autocomplete list relative to the position of the input. Only necessary when the input is moved.
+Updates the position of the autocomplete list relative to the position of the `el`. Only necessary when the `el` is moved.
 
 ### `.destroy()`
 
-Unbind horsey-related events from the `input`, remove the autocomplete list. It's like `horsey` was never here.
+Unbind horsey-related events from the `el`, remove the autocomplete list. It's like `horsey` was never here.
 
 ### `.defaultRenderer`
 
@@ -261,11 +266,13 @@ The default `filter` method
 
 # Events
 
-Once you've instantiated a `horsey`, some propietary synthetic events will be emitted on the provided `input`.
+Once you've instantiated a `horsey`, some propietary synthetic events will be emitted on the provided `el`.
 
 Name              | Description
 ------------------|---------------------------------------------------------------
 `horsey-selected` | Fired after a suggestion is selected from the autocomplete
+`horsey-show`     | Fired whenever the autocomplete list is displayed
+`horsey-hide`     | Fired whenever the autocomplete list is hidden
 
 # License
 
