@@ -1,6 +1,7 @@
-# 2.0.2 Jordania
+# 2.0.3 Jordania
 
 - DOM safety check when destroying `horsey` instances
+- Updated `bullseye@1.2.6`
 
 # 2.0.1 Arena for the Net
 
