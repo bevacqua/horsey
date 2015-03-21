@@ -40,6 +40,8 @@ function horsey (el, options) {
   inputEvents();
   eye = bullseye(ul, el, { caret: el.tagName === 'TEXTAREA' });
 
+  if (!visible()) { eye.sleep(); }
+
   return {
     add: add,
     clear: clear,
@@ -149,6 +151,7 @@ function horsey (el, options) {
   }
 
   function hide () {
+    eye.sleep();
     ul.className = ul.className.replace(/ sey-show/g, '');
     unselect();
     crossvent.fabricate(el, 'horsey-hide');
