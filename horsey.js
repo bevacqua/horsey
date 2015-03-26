@@ -7,13 +7,34 @@ var KEY_ENTER = 13;
 var KEY_ESC = 27;
 var KEY_UP = 38;
 var KEY_DOWN = 40;
+var cache = [];
+var doc = document;
+var win = global;
+
+function find (el) {
+  var entry;
+  var i;
+  for (i = 0; i < cache.length; i++) {
+    entry = cache[i];
+    if (entry.el === el) {
+      return entry.api;
+    }
+  }
+  return null;
+}
 
 function horsey (el, options) {
+  var cached = find(el);
+  if (cached) {
+    return cached;
+  }
+
   var o = options || {};
-  var parent = o.appendTo || document.body;
+  var parent = o.appendTo || doc.body;
   var render = o.render || defaultRenderer;
   var getText = o.getText || defaultGetText;
   var getValue = o.getValue || defaultGetValue;
+  var getSelection = o.getSelection || win.getSelection;
   var set = o.set || defaultSetter;
   var form = o.form;
   var suggestions = o.suggestions;
@@ -23,41 +44,54 @@ function horsey (el, options) {
   var oneload = once(loading);
   var eye;
   var deferredFiltering = defer(filtering);
+  var attachment = el;
+  var textInput;
 
   if (o.autoHideOnBlur === void 0) { o.autoHideOnBlur = true; }
   if (o.autoHideOnClick === void 0) { o.autoHideOnClick = true; }
   if (o.autoShowOnUpDown === void 0) { o.autoShowOnUpDown = el.tagName === 'INPUT'; }
 
-  parent.appendChild(ul);
-  el.setAttribute('autocomplete', 'off');
-
-  if (Array.isArray(suggestions)) {
-    loaded(suggestions);
-  } else if (typeof suggestions === 'function') {
-    crossvent.add(el, 'focus', oneload);
-  }
-
-  inputEvents();
-  eye = bullseye(ul, el, { caret: el.tagName === 'TEXTAREA' });
-
-  if (!visible()) { eye.sleep(); }
-
-  return {
+  var api = {
     add: add,
     clear: clear,
     show: show,
     hide: hide,
     destroy: destroy,
-    refreshPosition: eye.refresh,
+    refreshPosition: refreshPosition,
     defaultRenderer: defaultRenderer,
     defaultGetText: defaultGetText,
     defaultGetValue: defaultGetValue,
     defaultSetter: defaultSetter,
-    defaultFilter: defaultFilter
+    defaultFilter: defaultFilter,
+    retarget: retarget,
+    attachment: attachment
   };
+  var entry = { el: el, api: api };
+
+  retarget(el);
+  cache.push(entry);
+  parent.appendChild(ul);
+  el.setAttribute('autocomplete', 'off');
+
+  if (Array.isArray(suggestions)) {
+    loaded(suggestions);
+  }
+
+  return api;
+
+  function retarget (el) {
+    inputEvents(true);
+    attachment = api.attachment = el;
+    textInput = attachment.tagName === 'INPUT' || attachment.tagName === 'TEXTAREA';
+    inputEvents();
+  }
+
+  function refreshPosition () {
+    if (eye) { eye.refresh(); }
+  }
 
   function loading () {
-    crossvent.remove(el, 'focus', oneload);
+    crossvent.remove(attachment, 'focus', oneload);
     suggestions(loaded);
   }
 
@@ -74,20 +108,20 @@ function horsey (el, options) {
   function add (suggestion) {
     var li = tag('li', 'sey-item');
     render(li, suggestion);
-    crossvent.add(li, 'click', select);
+    crossvent.add(li, 'click', clickedSuggestion);
     crossvent.add(li, 'horsey-filter', filterItem);
     ul.appendChild(li);
     return li;
 
-    function select () {
+    function clickedSuggestion () {
       set(getValue(suggestion));
       hide();
-      el.focus();
-      crossvent.fabricate(el, 'horsey-selected');
+      attachment.focus();
+      crossvent.fabricate(attachment, 'horsey-selected');
     }
 
     function filterItem () {
-      var value = el.value;
+      var value = textInput ? el.value : el.innerHTML;
       if (filter(value, suggestion)) {
         li.className = li.className.replace(/ sey-hide/g, '');
       } else if (!hidden(li)) {
@@ -111,14 +145,14 @@ function horsey (el, options) {
     if (!visible()) {
       ul.className += ' sey-show';
       eye.refresh();
-      crossvent.fabricate(el, 'horsey-show');
+      crossvent.fabricate(attachment, 'horsey-show');
     }
   }
 
-  function select (el) {
+  function select (suggestion) {
     unselect();
-    if (el) {
-      selection = el;
+    if (suggestion) {
+      selection = suggestion;
       selection.className += ' sey-selected';
     }
   }
@@ -141,11 +175,11 @@ function horsey (el, options) {
     }
     var first = up ? 'lastChild' : 'firstChild';
     var next = up ? 'previousSibling' : 'nextSibling';
-    var el = selection && selection[next] || ul[first];
+    var suggestion = selection && selection[next] || ul[first];
 
-    select(el);
+    select(suggestion);
 
-    if (hidden(el)) {
+    if (hidden(suggestion)) {
       move(up, moves ? moves + 1 : 1);
     }
   }
@@ -154,7 +188,7 @@ function horsey (el, options) {
     eye.sleep();
     ul.className = ul.className.replace(/ sey-show/g, '');
     unselect();
-    crossvent.fabricate(el, 'horsey-hide');
+    crossvent.fabricate(attachment, 'horsey-hide');
   }
 
   function keydown (e) {
@@ -200,6 +234,7 @@ function horsey (el, options) {
     if (!visible()) {
       return;
     }
+    crossvent.fabricate(attachment, 'horsey-filter');
     var li = ul.firstChild;
     while (li) {
       crossvent.fabricate(li, 'horsey-filter');
@@ -231,7 +266,7 @@ function horsey (el, options) {
 
   function horseyEventTarget (e) {
     var target = e.target;
-    if (target === el) {
+    if (target === attachment) {
       return true;
     }
     while (target) {
@@ -258,25 +293,43 @@ function horsey (el, options) {
 
   function inputEvents (remove) {
     var op = remove ? 'remove' : 'add';
-    crossvent[op](el, 'keypress', deferredShow);
-    crossvent[op](el, 'keypress', deferredFiltering);
-    crossvent[op](el, 'paste', deferredFiltering);
-    crossvent[op](el, 'keydown', deferredKeydown);
-    crossvent[op](el, 'keydown', keydown);
-    if (o.autoHideOnBlur) { crossvent[op](document.documentElement, 'focus', hideOnBlur, true); }
-    if (o.autoHideOnClick) { crossvent[op](document, 'click', hideOnClick); }
+    if (eye) {
+      eye.destroy();
+      eye = null;
+    }
+    if (!remove) {
+      eye = bullseye(ul, attachment, { caret: attachment.tagName !== 'INPUT', getSelection: getSelection });
+      if (!visible()) { eye.sleep(); }
+    }
+    if (typeof suggestions === 'function' && !oneload.used) {
+      if (remove || doc.activeElement !== attachment) {
+        crossvent[op](attachment, 'focus', oneload);
+      } else {
+        oneload();
+      }
+    }
+    crossvent[op](attachment, 'keypress', deferredShow);
+    crossvent[op](attachment, 'keypress', deferredFiltering);
+    crossvent[op](attachment, 'paste', deferredFiltering);
+    crossvent[op](attachment, 'keydown', deferredKeydown);
+    crossvent[op](attachment, 'keydown', keydown);
+    if (o.autoHideOnBlur) { crossvent[op](doc.documentElement, 'focus', hideOnBlur, true); }
+    if (o.autoHideOnClick) { crossvent[op](doc, 'click', hideOnClick); }
     if (form) { crossvent[op](form, 'submit', hide); }
   }
 
   function destroy () {
     inputEvents(true);
-    eye.destroy();
     if (parent.contains(ul)) { parent.removeChild(ul); }
-    crossvent.remove(el, 'focus', oneload);
+    cache.splice(cache.indexOf(entry), 1);
   }
 
   function defaultSetter (value) {
-    el.value = value;
+    if (textInput) {
+      el.value = value;
+    } else {
+      el.innerHTML = value;
+    }
   }
 
   function defaultRenderer (li, suggestion) {
@@ -299,7 +352,7 @@ function defaultGetText (suggestion) {
 }
 
 function tag (type, className) {
-  var el = document.createElement(type);
+  var el = doc.createElement(type);
   el.className = className;
   return el;
 }
@@ -308,18 +361,13 @@ function once (fn) {
   var disposed;
   function disposable () {
     if (disposed) { return; }
-    disposed = true;
+    disposable.used = disposed = true;
     (fn || noop).apply(null, arguments);
   }
   return disposable;
 }
-
-function defer (fn) {
-  return function () {
-    setTimeout(fn, 0);
-  };
-}
-
+function defer (fn) { return function () { setTimeout(fn, 0); }; }
 function noop () {}
 
+horsey.find = find;
 module.exports = horsey;

@@ -41,7 +41,7 @@ bower install horsey --save
 
 # Options
 
-Entry point is `horsey(el, options)`. Configuration options are detailed below. This method [returns a small API](#api) into the `horsey` autocomplete list instance.
+Entry point is `horsey(el, options)`. Configuration options are detailed below. This method [returns a small API](#api) into the `horsey` autocomplete list instance. You can also find existing horsey instances using `horsey.find`.
 
 ### `suggestions`
 
@@ -244,6 +244,10 @@ Updates the position of the autocomplete list relative to the position of the `e
 
 Unbind horsey-related events from the `el`, remove the autocomplete list. It's like `horsey` was never here.
 
+### `.retarget(target)`
+
+Detaches this `horsey` instance from `el`, removing events and whatnot, and then attaches the instance to `target`. Note that `horsey.find` will still only work with `el`. This method is mostly for internal purposes, but it's also useful if you're developing a text editor with multiple modes (particularly if it switches between a `<textarea>` and a content-editable `<div>`).
+
 ### `.defaultRenderer`
 
 The default `render` method
@@ -273,6 +277,7 @@ Name              | Description
 `horsey-selected` | Fired after a suggestion is selected from the autocomplete
 `horsey-show`     | Fired whenever the autocomplete list is displayed
 `horsey-hide`     | Fired whenever the autocomplete list is hidden
+`horsey-filter`   | Fired whenever the autocomplete list is about to be filtered. Useful to prime the filter method
 
 # License
 
