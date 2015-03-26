@@ -1,3 +1,8 @@
+# 2.1.0 Memotest
+
+- Retargetting to improve interaction with rich text editors
+- Cache `horsey` instances paired with DOM elements
+
 # 2.0.4 Jordania
 
 - DOM safety check when destroying `horsey` instances
