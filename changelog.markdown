@@ -1,7 +1,8 @@
-# 2.1.0 Memotest
+# 2.1.1 Memotest
 
 - Retargetting to improve interaction with rich text editors
 - Cache `horsey` instances paired with DOM elements
+- Updated `bullseye@1.4.0`
 
 # 2.0.4 Jordania
 
