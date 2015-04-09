@@ -1,3 +1,7 @@
+# 2.1.2 Bull Run
+
+- Updated `bullseye@1.4.1`
+
 # 2.1.1 Memotest
 
 - Retargetting to improve interaction with rich text editors
