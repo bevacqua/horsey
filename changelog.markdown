@@ -1,3 +1,7 @@
+# 2.2.0 Sudden Shock
+
+- Published `<ul>` on the API as a `list` property
+
 # 2.1.3 Bull Run
 
 - Updated `bullseye@1.4.1`
