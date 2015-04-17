@@ -228,6 +228,10 @@ Just like when passing `suggestions` as an option, you can add individual sugges
 
 You can however, remove every single suggestion from the autocomplete, wiping the slate clean. Contrary to `.destroy()`, `.clear()` won't leave the `horsey` instance useless, and calling `.add` will turn it back online in no time.
 
+### `.list`
+
+The autocomplete list DOM `<ul>` element.
+
 ### `.show()`
 
 Shows the autocomplete list.
