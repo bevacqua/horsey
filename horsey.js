@@ -65,7 +65,8 @@ function horsey (el, options) {
     defaultFilter: defaultFilter,
     retarget: retarget,
     attachment: attachment,
-    list: ul
+    list: ul,
+    suggestions: []
   };
   var entry = { el: el, api: api };
 
@@ -98,6 +99,7 @@ function horsey (el, options) {
 
   function loaded (suggestions) {
     suggestions.forEach(add);
+    api.suggestions = suggestions;
   }
 
   function clear () {
@@ -112,6 +114,7 @@ function horsey (el, options) {
     crossvent.add(li, 'click', clickedSuggestion);
     crossvent.add(li, 'horsey-filter', filterItem);
     ul.appendChild(li);
+    api.suggestions.push(suggestion);
     return li;
 
     function clickedSuggestion () {

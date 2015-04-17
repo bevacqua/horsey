@@ -232,6 +232,10 @@ You can however, remove every single suggestion from the autocomplete, wiping th
 
 The autocomplete list DOM `<ul>` element.
 
+### `.suggestions`
+
+Exposes the suggestions that have been added so far to the autocomplete list. Includes suggestions that may not be shown due to filtering. This should be treated as a read-only list.
+
 ### `.show()`
 
 Shows the autocomplete list.
