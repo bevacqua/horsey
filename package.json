@@ -1,6 +1,6 @@
 {
   "name": "horsey",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Progressive and customizable autocomplete component",
   "main": "horsey.js",
   "scripts": {
