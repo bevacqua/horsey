@@ -64,7 +64,8 @@ function horsey (el, options) {
     defaultSetter: defaultSetter,
     defaultFilter: defaultFilter,
     retarget: retarget,
-    attachment: attachment
+    attachment: attachment,
+    list: ul
   };
   var entry = { el: el, api: api };
 
