@@ -1,3 +1,7 @@
+# 2.3.0 Suggestive Outfit
+
+- Exposed `suggestions` on instance API
+
 # 2.2.0 Sudden Shock
 
 - Published `<ul>` on the API as a `list` property
