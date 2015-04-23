@@ -1,3 +1,7 @@
+# 2.3.1 Bullying
+
+- Bumped `bullseye@1.4.3`
+
 # 2.3.0 Suggestive Outfit
 
 - Exposed `suggestions` on instance API
