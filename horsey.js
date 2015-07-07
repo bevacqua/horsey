@@ -9,6 +9,7 @@ var KEY_UP = 38;
 var KEY_DOWN = 40;
 var cache = [];
 var doc = document;
+var docElement = doc.documentElement;
 var win = global;
 
 function find (el) {
@@ -46,6 +47,7 @@ function horsey (el, options) {
   var deferredFiltering = defer(filtering);
   var attachment = el;
   var textInput;
+  var anyInput;
 
   if (o.autoHideOnBlur === void 0) { o.autoHideOnBlur = true; }
   if (o.autoHideOnClick === void 0) { o.autoHideOnClick = true; }
@@ -85,6 +87,7 @@ function horsey (el, options) {
     inputEvents(true);
     attachment = api.attachment = el;
     textInput = attachment.tagName === 'INPUT' || attachment.tagName === 'TEXTAREA';
+    anyInput = textInput || isEditable(attachment);
     inputEvents();
   }
 
@@ -153,6 +156,14 @@ function horsey (el, options) {
     }
   }
 
+  function toggle () {
+    if (!visible()) {
+      show();
+    } else {
+      hide();
+    }
+  }
+
   function select (suggestion) {
     unselect();
     if (suggestion) {
@@ -199,7 +210,7 @@ function horsey (el, options) {
     var shown = visible();
     var which = e.which || e.keyCode;
     if (which === KEY_DOWN) {
-      if (o.autoShowOnUpDown) {
+      if (anyInput && o.autoShowOnUpDown) {
         show();
       }
       if (shown) {
@@ -207,7 +218,7 @@ function horsey (el, options) {
         stop(e);
       }
     } else if (which === KEY_UP) {
-      if (o.autoShowOnUpDown) {
+      if (anyInput && o.autoShowOnUpDown) {
         show();
       }
       if (shown) {
@@ -252,7 +263,7 @@ function horsey (el, options) {
     }
   }
 
-  function deferredKeydown (e) {
+  function deferredFilteringNoEnter (e) {
     var which = e.which || e.keyCode;
     if (which === KEY_ENTER) {
       return;
@@ -274,7 +285,7 @@ function horsey (el, options) {
       return true;
     }
     while (target) {
-      if (target === ul) {
+      if (target === ul || target === attachment) {
         return true;
       }
       target = target.parentNode;
@@ -302,22 +313,27 @@ function horsey (el, options) {
       eye = null;
     }
     if (!remove) {
-      eye = bullseye(ul, attachment, { caret: attachment.tagName !== 'INPUT', getSelection: getSelection });
+      eye = bullseye(ul, attachment, { caret: anyInput && attachment.tagName !== 'INPUT', getSelection: getSelection });
       if (!visible()) { eye.sleep(); }
     }
     if (typeof suggestions === 'function' && !oneload.used) {
-      if (remove || doc.activeElement !== attachment) {
+      if (remove || (anyInput && doc.activeElement !== attachment)) {
         crossvent[op](attachment, 'focus', oneload);
       } else {
         oneload();
       }
     }
-    crossvent[op](attachment, 'keypress', deferredShow);
-    crossvent[op](attachment, 'keypress', deferredFiltering);
-    crossvent[op](attachment, 'paste', deferredFiltering);
-    crossvent[op](attachment, 'keydown', deferredKeydown);
-    crossvent[op](attachment, 'keydown', keydown);
-    if (o.autoHideOnBlur) { crossvent[op](doc.documentElement, 'focus', hideOnBlur, true); }
+    if (anyInput) {
+      crossvent[op](attachment, 'keypress', deferredShow);
+      crossvent[op](attachment, 'keypress', deferredFiltering);
+      crossvent[op](attachment, 'keydown', deferredFilteringNoEnter);
+      crossvent[op](attachment, 'paste', deferredFiltering);
+      crossvent[op](attachment, 'keydown', keydown);
+      if (o.autoHideOnBlur) { crossvent[op](docElement, 'focus', hideOnBlur, true); }
+    } else {
+      crossvent[op](attachment, 'click', toggle);
+      crossvent[op](docElement, 'keydown', keydown);
+    }
     if (o.autoHideOnClick) { crossvent[op](doc, 'click', hideOnClick); }
     if (form) { crossvent[op](form, 'submit', hide); }
   }
@@ -372,6 +388,20 @@ function once (fn) {
 }
 function defer (fn) { return function () { setTimeout(fn, 0); }; }
 function noop () {}
+
+function isEditable (el) {
+  var value = el.getAttribute('contentEditable');
+  if (value === 'false') {
+    return false;
+  }
+  if (value === 'true') {
+    return true;
+  }
+  if (el.parentElement) {
+    return isEditable(el.parentElement);
+  }
+  return false;
+}
 
 horsey.find = find;
 module.exports = horsey;

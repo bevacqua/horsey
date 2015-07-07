@@ -1,3 +1,8 @@
+# 2.4.0 Customer Care
+
+- Support for _non-`<input>` non-`<textarea>` non-`contentEditable`_ DOM attachment elements
+- Updated `crossvent` to `1.4.0`
+
 # 2.3.1 Bullying
 
 - Bumped `bullseye@1.4.3`
