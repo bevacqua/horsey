@@ -1,3 +1,7 @@
+# 2.4.1 Left-o-mattic
+
+- Ignore right clicks when acting as a drop-down list
+
 # 2.4.0 Customer Care
 
 - Support for _non-`<input>` non-`<textarea>` non-`contentEditable`_ DOM attachment elements

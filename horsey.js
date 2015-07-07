@@ -156,7 +156,11 @@ function horsey (el, options) {
     }
   }
 
-  function toggle () {
+  function toggle (e) {
+    var left = e.which === 1 && !e.metaKey && !e.ctrlKey;
+    if (left === false) {
+      return; // we only care about honest to god left-clicks
+    }
     if (!visible()) {
       show();
     } else {
