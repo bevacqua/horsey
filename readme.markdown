@@ -267,6 +267,10 @@ Shows the autocomplete list.
 
 Hides the autocomplete list.
 
+### `.toggle()`
+
+Shows or hides the autocomplete list.
+
 ### `.refreshPosition()`
 
 Updates the position of the autocomplete list relative to the position of the `el`. Only necessary when the `el` is moved.
