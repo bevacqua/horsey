@@ -24,8 +24,9 @@
   "homepage": "https://github.com/bevacqua/horsey",
   "dependencies": {
     "bullseye": "1.4.3",
-    "crossvent": "1.4.0",
-    "fuzzysearch": "1.0.3"
+    "crossvent": "1.5.0",
+    "fuzzysearch": "1.0.3",
+    "sell": "1.0.0"
   },
   "devDependencies": {
     "browserify": "8.1.0",

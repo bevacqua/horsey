@@ -1,11 +1,11 @@
 void function () {
   'use strict';
 
-  horsey(hy, {
+  horsey(document.querySelector('#hy'), {
     suggestions: ['banana', 'apple', 'orange']
   });
 
-  horsey(ly, {
+  horsey(document.querySelector('#ly'), {
     suggestions: function (done) {
       var start = new Date();
       lyr.innerText = 'Loading...';
@@ -16,7 +16,7 @@ void function () {
     }
   });
 
-  horsey(kv, {
+  horsey(document.querySelector('#kv'), {
     suggestions: [
       { value: 'banana', text: 'Bananas from Amazon Rainforest' },
       { value: 'apple', text: 'Red apples from New Zealand' },
@@ -25,7 +25,7 @@ void function () {
     ]
   });
 
-  horsey(ig, {
+  horsey(document.querySelector('#ig'), {
     suggestions: [
       { value: 'banana', text: 'Bananas from Amazon Rainforest' },
       { value: 'apple', text: 'Red apples from New Zealand' },
@@ -36,6 +36,40 @@ void function () {
       var image = '<img class="autofruit" src="example/fruits/' + suggestion.value + '.png" /> ';
       li.innerHTML = image + suggestion.text;
     }
+  });
+
+  horsey(document.querySelector('#il'), {
+    suggestions: [
+      { value: 'banana', text: 'Bananas from Amazon Rainforest' },
+      { value: 'banana-boat', text: 'Banana Boat' },
+      { value: 'apple', text: 'Red apples from New Zealand' },
+      { value: 'apple-cider', text: 'Red apple cider beer' },
+      { value: 'orange', text: 'Oranges from Moscow' },
+      { value: 'orange-vodka', text: 'Classic vodka and oranges cocktali' },
+      { value: 'lemon', text: 'Juicy lemons from Amalfitan Coast' }
+    ],
+    limit: 2
+  });
+
+  horsey(document.querySelector('#ta'), {
+    suggestions: [
+      { value: '@michael', text: 'Michael Jackson' },
+      { value: '@jack', text: 'Jack Johnson' },
+      { value: '@ozzy', text: 'Ozzy Osbourne' }
+    ],
+    anchor: '@'
+  });
+
+  horsey(document.querySelector('#ddl'), {
+    suggestions: [
+      { value: 'banana', text: 'Bananas from Amazon Rainforest' },
+      { value: 'banana-boat', text: 'Banana Boat' },
+      { value: 'apple', text: 'Red apples from New Zealand' },
+      { value: 'apple-cider', text: 'Red apple cider beer' },
+      { value: 'orange', text: 'Oranges from Moscow' },
+      { value: 'orange-vodka', text: 'Classic vodka and oranges cocktali' },
+      { value: 'lemon', text: 'Juicy lemons from Amalfitan Coast' }
+    ]
   });
 
   function events (el, type, fn) {

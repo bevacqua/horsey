@@ -98,6 +98,10 @@ horsey(el, {
 });
 ```
 
+### `limit`
+
+Allows you to limit the amount of search results that are displayed by `horsey`. Defaults to `Infinity`.
+
 ### `getText`
 
 A function that returns the textual representation to be displayed on the suggestion list. The result of `getText` is also used when filtering _under the default implementation_.
@@ -167,6 +171,25 @@ horsey(el, {
   set: function (value) {
     el.value += value + ', ';
   }
+});
+```
+
+### `anchor`
+
+A string that will be used as a regular expression to figure out _when_ the suggestions should be presented. If an `anchor` is set, the text will be appended instead of replaced, and **the `set` option will be ignored**.
+
+### `editor`
+
+You can provide `horsey` with a [woofmark] editor instance as to seamlessly enable the autocompletion functionality across all modes in the editor, and not just when the editor is using a `<textarea>`.
+
+###### Example
+
+```js
+var horsey = require('horsey');
+var woofmark = require('woofmark');
+var editor = woofmark(el);
+var horse = horsey(el, {
+  editor: editor
 });
 ```
 
