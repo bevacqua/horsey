@@ -1,3 +1,15 @@
+# 2.5.0 Woof woof
+
+- Example on how to use in a `<textarea>`
+- Example on how to use as a drop-down list
+- Better integration with `woofmark`
+- Introduced `anchor` option to use in textareas effectively
+- Introduced `limit` option to limit suggestions
+
+# 2.4.1 Left-o-mattic
+
+- Ignore right clicks when acting as a drop-down list
+
 # 2.4.0 Customer Care
 
 - Support for _non-`<input>` non-`<textarea>` non-`contentEditable`_ DOM attachment elements

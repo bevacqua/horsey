@@ -13,7 +13,7 @@
     <input id='hy'/>
     <pre>
       <code>
-horsey(input, {
+horsey(document.querySelector('input'), {
   suggestions: ['banana', 'apple', 'orange']
 });
       </code>
@@ -26,7 +26,7 @@ horsey(input, {
     <input id='ly'/>
     <pre>
       <code>
-horsey(input, {
+horsey(document.querySelector('input'), {
   suggestions: function (done) {
     setTimeout(function () {
       done(['banana', 'apple', 'orange']);
@@ -41,7 +41,7 @@ horsey(input, {
     <input id='kv'/>
     <pre>
       <code>
-horsey(input, {
+horsey(document.querySelector('input'), {
   suggestions: [
     { value: 'banana', text: 'Bananas from Amazon Rainforest' },
     { value: 'apple', text: 'Red apples from New Zealand' },
@@ -57,7 +57,7 @@ horsey(input, {
     <input id='ig'/>
     <pre>
       <code>
-horsey(input, {
+horsey(document.querySelector('input'), {
   suggestions: [
     { value: 'banana', text: 'Bananas from Amazon Rainforest' },
     { value: 'apple', text: 'Red apples from New Zealand' },
@@ -68,6 +68,62 @@ horsey(input, {
     var image = '&lt;img class="autofruit" src="example/fruits/' + suggestion.value + '.png" /&gt; ';
     li.innerHTML = image + suggestion.text;
   }
+});
+      </code>
+    </pre>
+  </div>
+  <div class='parent'>
+    <label for='ig'>You can also limit the amount of suggestions to display! </label>
+    <input id='il'/>
+    <pre>
+      <code>
+horsey(document.querySelector('input'), {
+  suggestions: [
+    { value: 'banana', text: 'Bananas from Amazon Rainforest' },
+    { value: 'banana-boat', text: 'Banana Boat' },
+    { value: 'apple', text: 'Red apples from New Zealand' },
+    { value: 'apple-cider', text: 'Red apple cider beer' },
+    { value: 'orange', text: 'Oranges from Moscow' },
+    { value: 'orange-vodka', text: 'Classic orange vodka cocktail' },
+    { value: 'lemon', text: 'Juicy lemons from Amalfitan Coast' }
+  ],
+  limit: 2
+});
+      </code>
+    </pre>
+  </div>
+  <div class='parent'>
+    <label for='ig'>Want to use it as in a textarea? </label>
+    <textarea id='ta'>Add a mention somewhere in the textarea, using an at-sign like in emails. For example, you can type @michael. The cursor will actually follow you, pretty nice!</textarea>
+    <pre>
+      <code>
+horsey(document.querySelector('textarea'), {
+  suggestions: [
+    { value: '@michael', text: 'Michael Jackson' },
+    { value: '@jack', text: 'Jack Johnson' },
+    { value: '@ozzy', text: 'Ozzy Osbourne' }
+  ],
+  anchor: '@'
+});
+      </code>
+    </pre>
+  </div>
+  <div class='parent'>
+    <label for='ig'>Want to use it as a drop-down list? </label>
+    <div id='ddl'>Click here to set fruity treat type</div>
+    <pre>
+      <code>
+horsey(document.querySelector('div'), {
+  suggestions: [
+    { value: 'banana', text: 'Bananas from Amazon Rainforest' },
+    { value: 'banana-boat', text: 'Banana Boat' },
+    { value: 'apple', text: 'Red apples from New Zealand' },
+    { value: 'apple-cider', text: 'Red apple cider beer' },
+    { value: 'orange', text: 'Oranges from Moscow' },
+    { value: 'orange-vodka', text: 'Classic orange vodka cocktail' },
+    { value: 'lemon', text: 'Juicy lemons from Amalfitan Coast' }
+  ],
+  limit: 2
 });
       </code>
     </pre>

@@ -16,10 +16,17 @@ html, body {
   box-sizing: inherit;
 }
 
-body, input, button {
+body, input, button, textarea {
   font-family: Georgia, Helvetica;
   font-size: 17px;
   color: #ecf0f1;
+}
+
+textarea {
+  border: none;
+  padding: 10px;
+  width: 100%;
+  background-color: #14204f;
 }
 
 h1 {
@@ -112,4 +119,9 @@ button:hover {
 .autofruit {
   width: 16px;
   margin-right: 3px;
+}
+
+#ddl {
+  padding: 10px;
+  background-color: rgba(0,0,0,0.1);
 }

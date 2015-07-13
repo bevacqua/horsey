@@ -1,5 +1,6 @@
 'use strict';
 
+var sell = require('sell');
 var crossvent = require('crossvent');
 var bullseye = require('bullseye');
 var fuzzysearch = require('fuzzysearch');
@@ -11,6 +12,7 @@ var cache = [];
 var doc = document;
 var docElement = doc.documentElement;
 var win = global;
+var rparagraph = /^<p>|<\/p>\n?$/g;
 
 function find (el) {
   var entry;
@@ -36,22 +38,32 @@ function horsey (el, options) {
   var getText = o.getText || defaultGetText;
   var getValue = o.getValue || defaultGetValue;
   var getSelection = o.getSelection || win.getSelection;
-  var set = o.set || defaultSetter;
   var form = o.form;
+  var limit = typeof o.limit === 'number' ? o.limit : Infinity;
   var suggestions = o.suggestions;
-  var filter = o.filter || defaultFilter;
+  var userFilter = o.filter || defaultFilter;
+  var userSet = o.set || defaultSetter;
   var ul = tag('ul', 'sey-list');
   var selection = null;
   var oneload = once(loading);
   var eye;
   var deferredFiltering = defer(filtering);
   var attachment = el;
+  var editor = o.editor;
   var textInput;
   var anyInput;
+  var cachedChunks;
+  var cachedNeedle;
+  var ranchorleft;
+  var ranchorright;
 
   if (o.autoHideOnBlur === void 0) { o.autoHideOnBlur = true; }
   if (o.autoHideOnClick === void 0) { o.autoHideOnClick = true; }
   if (o.autoShowOnUpDown === void 0) { o.autoShowOnUpDown = el.tagName === 'INPUT'; }
+  if (o.anchor) {
+    ranchorleft = new RegExp('^' + o.anchor);
+    ranchorright = new RegExp(o.anchor + '$');
+  }
 
   var api = {
     add: add,
@@ -116,22 +128,30 @@ function horsey (el, options) {
     render(li, suggestion);
     crossvent.add(li, 'click', clickedSuggestion);
     crossvent.add(li, 'horsey-filter', filterItem);
+    crossvent.add(li, 'horsey-hide', hideItem);
     ul.appendChild(li);
     api.suggestions.push(suggestion);
     return li;
 
     function clickedSuggestion () {
-      set(getValue(suggestion));
+      var value = getValue(suggestion);
+      set(value);
       hide();
       attachment.focus();
-      crossvent.fabricate(attachment, 'horsey-selected');
+      crossvent.fabricate(attachment, 'horsey-selected', value);
     }
 
     function filterItem () {
       var value = textInput ? el.value : el.innerHTML;
       if (filter(value, suggestion)) {
         li.className = li.className.replace(/ sey-hide/g, '');
-      } else if (!hidden(li)) {
+      } else {
+        crossvent.fabricate(li, 'horsey-hide');
+      }
+    }
+
+    function hideItem () {
+      if (!hidden(li)) {
         li.className += ' sey-hide';
         if (selection === li) {
           unselect();
@@ -140,13 +160,23 @@ function horsey (el, options) {
     }
   }
 
-  function visible () {
-    return ul.className.indexOf('sey-show') !== -1;
+  function set (value) {
+    if (o.anchor) {
+      return (isText() ? appendText : appendHTML)(value);
+    }
+    userSet(value);
   }
 
-  function hidden (li) {
-    return li.className.indexOf('sey-hide') !== -1;
+  function filter (value, suggestion) {
+    if (o.anchor) {
+      return (isText() ? filterAnchoredText : filterAnchoredHTML)(value, suggestion);
+    }
+    return userFilter(value, suggestion);
   }
+
+  function isText () { return !editor || isInput(attachment);}
+  function visible () { return ul.className.indexOf('sey-show') !== -1; }
+  function hidden (li) { return li.className.indexOf('sey-hide') !== -1; }
 
   function show () {
     if (!visible()) {
@@ -156,7 +186,11 @@ function horsey (el, options) {
     }
   }
 
-  function toggle () {
+  function toggle (e) {
+    var left = e.which === 1 && !e.metaKey && !e.ctrlKey;
+    if (left === false) {
+      return; // we only care about honest to god left-clicks
+    }
     if (!visible()) {
       show();
     } else {
@@ -251,8 +285,17 @@ function horsey (el, options) {
     }
     crossvent.fabricate(attachment, 'horsey-filter');
     var li = ul.firstChild;
+    var count = 0;
     while (li) {
-      crossvent.fabricate(li, 'horsey-filter');
+      if (count >= limit) {
+        crossvent.fabricate(li, 'horsey-hide');
+      }
+      if (count < limit) {
+        crossvent.fabricate(li, 'horsey-filter');
+        if (li.className.indexOf('sey-hide') === -1) {
+          count++;
+        }
+      }
       li = li.nextSibling;
     }
     if (!selection) {
@@ -323,6 +366,9 @@ function horsey (el, options) {
         oneload();
       }
     }
+    if (editor) {
+      crossvent[op](editor.editable, 'horsey-filter', getChunksForFilters);
+    }
     if (anyInput) {
       crossvent[op](attachment, 'keypress', deferredShow);
       crossvent[op](attachment, 'keypress', deferredFiltering);
@@ -361,7 +407,92 @@ function horsey (el, options) {
     var value = getValue(suggestion) || '';
     return fuzzysearch(q, text.toLowerCase()) || fuzzysearch(q, value.toLowerCase());
   }
+
+  function loopbackToAnchor (text, p) {
+    var result = '';
+    var anchored = false;
+    var start = p.start;
+    while (anchored === false && start >= 0) {
+      result = text.substr(start - 1, p.start - start + 1);
+      anchored = ranchorleft.test(result);
+      start--;
+    }
+    return {
+      text: anchored ? result : null,
+      start: start
+    };
+  }
+
+  function getChunksForFilters () {
+    editor.runCommand(function gotContext (chunks) {
+      var text = chunks.before + chunks.selection;
+      var anchored = false;
+      var start = text.length;
+      while (anchored === false && start >= 0) {
+        cachedNeedle = text.substr(start - 1, text.length - start + 1);
+        anchored = ranchorleft.test(cachedNeedle);
+        start--;
+      }
+      if (anchored === false) {
+        cachedNeedle = null;
+      }
+      cachedChunks = chunks;
+    });
+  }
+
+  function filterAnchoredText (q, suggestion) {
+    var position = sell(el);
+    var input = loopbackToAnchor(q, position).text;
+    if (input) {
+      return userFilter(input, suggestion);
+    }
+  }
+
+  function filterAnchoredHTML (q, suggestion) {
+    if (cachedNeedle) {
+      return userFilter(cachedNeedle, suggestion);
+    }
+  }
+
+  function entitize (value) {
+    if (editor && editor.mode !== 'markdown') {
+      return editor.parseMarkdown(value).replace(rparagraph, '');
+    }
+    return value;
+  }
+
+  function appendText (value) {
+    var entity = entitize(value);
+    var current = el.value;
+    var position = sell(el);
+    var input = loopbackToAnchor(current, position);
+    var left = current.substr(0, input.start);
+    var right = current.substr(input.start + input.text.length + (position.end - position.start));
+    var before = left + entity + ' ';
+
+    el.value = before + right;
+    sell(el, {
+      start: before.length, end: before.length
+    });
+  }
+
+  function appendHTML (value) {
+    editor.runCommand(setEntity);
+    function setEntity (chunks) {
+      var entity = entitize(value);
+      var left = cachedChunks.before;
+      var len = left.length - 1;
+      while (len > 0 && !ranchorright.test(left)) {
+        left = left.substr(0, --len);
+      }
+      chunks.before = left.substr(0, len) + entity + '&nbsp;';
+      chunks.after = cachedChunks.selection + cachedChunks.after;
+      chunks.selection = '';
+    }
+  }
 }
+
+function isInput (el) { return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA'; }
 
 function defaultGetValue (suggestion) {
   return typeof suggestion === 'string' ? suggestion : suggestion.value;
