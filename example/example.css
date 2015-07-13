@@ -27,6 +27,7 @@ textarea {
   padding: 10px;
   width: 100%;
   background-color: #14204f;
+  min-height: 400px;
 }
 
 h1 {
@@ -122,6 +123,7 @@ button:hover {
 }
 
 #ddl {
+  cursor: pointer;
   padding: 10px;
   background-color: rgba(0,0,0,0.1);
 }
