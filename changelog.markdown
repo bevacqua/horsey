@@ -1,3 +1,7 @@
+# 2.5.1 Toggle Bobble
+
+- Exposed `toggle` method to toggle visibility of horsey autocomplete suggestion list
+
 # 2.5.0 Woof woof
 
 - Example on how to use in a `<textarea>`

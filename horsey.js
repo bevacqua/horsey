@@ -70,6 +70,7 @@ function horsey (el, options) {
     clear: clear,
     show: show,
     hide: hide,
+    toggle: toggle,
     destroy: destroy,
     refreshPosition: refreshPosition,
     defaultRenderer: defaultRenderer,
@@ -186,11 +187,15 @@ function horsey (el, options) {
     }
   }
 
-  function toggle (e) {
+  function toggler (e) {
     var left = e.which === 1 && !e.metaKey && !e.ctrlKey;
     if (left === false) {
       return; // we only care about honest to god left-clicks
     }
+    toggle();
+  }
+
+  function toggle () {
     if (!visible()) {
       show();
     } else {
@@ -377,7 +382,7 @@ function horsey (el, options) {
       crossvent[op](attachment, 'keydown', keydown);
       if (o.autoHideOnBlur) { crossvent[op](docElement, 'focus', hideOnBlur, true); }
     } else {
-      crossvent[op](attachment, 'click', toggle);
+      crossvent[op](attachment, 'click', toggler);
       crossvent[op](docElement, 'keydown', keydown);
     }
     if (o.autoHideOnClick) { crossvent[op](doc, 'click', hideOnClick); }
