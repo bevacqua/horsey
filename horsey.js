@@ -500,11 +500,11 @@ function horsey (el, options) {
 function isInput (el) { return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA'; }
 
 function defaultGetValue (suggestion) {
-  return typeof suggestion !== 'object' ? String(suggestion) : suggestion.value;
+  return suggestion && suggestion.value ? suggestion.value : String(suggestion);
 }
 
 function defaultGetText (suggestion) {
-  return typeof suggestion !== 'object' ? String(suggestion) : suggestion.text;
+  return suggestion && suggestion.text ? suggestion.text : String(suggestion);
 }
 
 function tag (type, className) {
