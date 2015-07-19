@@ -37,6 +37,26 @@ horsey(document.querySelector('input'), {
     </pre>
   </div>
   <div class='parent'>
+    <label for='lazyrender'>Lazy render the names (useful for a lot of names)</label>
+    <div><i id='lazyrender-text'>Being lazy...</i></div>
+    <input id='lazyrender'/>
+    <pre>
+      <code>
+horsey(document.querySelector('input'), {
+  limit: 7,
+  suggestions: function (done) {
+      fetch('example/names.json')
+          .then(function(response) {
+            return response.json()
+          }).then(function(nameList) {
+            done(nameList);
+          });
+    }
+});
+      </code>
+    </pre>
+  </div>
+  <div class='parent'>
     <label for='kv'>You can also use "key value pairs": </label>
     <input id='kv'/>
     <pre>
