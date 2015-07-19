@@ -410,7 +410,8 @@ function horsey (el, options) {
   function defaultFilter (q, suggestion) {
     var text = getText(suggestion) || '';
     var value = getValue(suggestion) || '';
-    return fuzzysearch(q, text.toLowerCase()) || fuzzysearch(q, value.toLowerCase());
+    var needle = q.toLowerCase();
+    return fuzzysearch(needle, text.toLowerCase()) || fuzzysearch(needle, value.toLowerCase());
   }
 
   function loopbackToAnchor (text, p) {
@@ -500,11 +501,15 @@ function horsey (el, options) {
 function isInput (el) { return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA'; }
 
 function defaultGetValue (suggestion) {
-  return typeof suggestion === 'string' ? suggestion : suggestion.value;
+  return defaultGet('value', suggestion);
 }
 
 function defaultGetText (suggestion) {
-  return typeof suggestion === 'string' ? suggestion : suggestion.text;
+  return defaultGet('text', suggestion);
+}
+
+function defaultGet (type, value) {
+  return value && value[type] !== void 0 ? value[type] : value;
 }
 
 function tag (type, className) {
