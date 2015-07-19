@@ -410,7 +410,8 @@ function horsey (el, options) {
   function defaultFilter (q, suggestion) {
     var text = getText(suggestion) || '';
     var value = getValue(suggestion) || '';
-    return fuzzysearch(q, text.toLowerCase()) || fuzzysearch(q, value.toLowerCase());
+    var needle = q.toLowerCase();
+    return fuzzysearch(needle, text.toLowerCase()) || fuzzysearch(needle, value.toLowerCase());
   }
 
   function loopbackToAnchor (text, p) {
