@@ -1,3 +1,8 @@
+# 2.5.2 Insensitive Animal
+
+- Case insensitive fuzzy searching
+- Fixed a bug where non-string suggestions would be displayed as `undefined`
+
 # 2.5.1 Toggle Bobble
 
 - Exposed `toggle` method to toggle visibility of horsey autocomplete suggestion list
