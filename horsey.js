@@ -191,6 +191,7 @@ function horsey (el, options) {
   function show () {
     if (!visible()) {
       ul.className += ' sey-show';
+      filtering();
       eye.refresh();
       crossvent.fabricate(attachment, 'horsey-show');
     }
