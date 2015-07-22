@@ -180,7 +180,7 @@ A string that will be used as a regular expression to figure out _when_ the sugg
 
 ### `editor`
 
-You can provide `horsey` with a [woofmark] editor instance as to seamlessly enable the autocompletion functionality across all modes in the editor, and not just when the editor is using a `<textarea>`.
+You can provide `horsey` with a [woofmark editor instance][6] as to seamlessly enable the autocompletion functionality across all modes in the editor, and not just when the editor is using a `<textarea>`.
 
 ###### Example
 
@@ -323,3 +323,4 @@ MIT
 [3]: http://bevacqua.github.io/horsey
 [4]: https://github.com/bevacqua/fuzzysearch
 [5]: http://i.imgur.com/imDFC0C.png
+[6]: https://github.com/bevacqua/woofmark#editor
