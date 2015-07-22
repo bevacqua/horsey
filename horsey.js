@@ -84,6 +84,7 @@ function horsey (el, options) {
     suggestions: []
   };
   var entry = { el: el, api: api };
+  var woofmarkLastMode;
 
   retarget(el);
   cache.push(entry);
@@ -373,6 +374,7 @@ function horsey (el, options) {
     }
     if (editor) {
       crossvent[op](editor.editable, 'horsey-filter', getChunksForFilters);
+      crossvent[op](editor.textarea, 'woofmark-mode-change', woofmarkModeChanged);
     }
     if (anyInput) {
       crossvent[op](attachment, 'keypress', deferredShow);
@@ -387,6 +389,13 @@ function horsey (el, options) {
     }
     if (o.autoHideOnClick) { crossvent[op](doc, 'click', hideOnClick); }
     if (form) { crossvent[op](form, 'submit', hide); }
+  }
+
+  function woofmarkModeChanged () {
+    if (editor.mode !== woofmarkLastMode) {
+      retarget(editor.mode === 'wysiwyg' ? editor.editable : editor.textarea);
+    }
+    woofmarkLastMode = editor.mode;
   }
 
   function destroy () {
