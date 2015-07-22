@@ -37,7 +37,6 @@ function horsey (el, options) {
   var render = o.render || defaultRenderer;
   var getText = o.getText || defaultGetText;
   var getValue = o.getValue || defaultGetValue;
-  var getSelection = o.getSelection || win.getSelection;
   var form = o.form;
   var limit = typeof o.limit === 'number' ? o.limit : Infinity;
   var suggestions = o.suggestions;
@@ -362,7 +361,7 @@ function horsey (el, options) {
       eye = null;
     }
     if (!remove) {
-      eye = bullseye(ul, attachment, { caret: anyInput && attachment.tagName !== 'INPUT', getSelection: getSelection });
+      eye = bullseye(ul, attachment, { caret: anyInput && attachment.tagName !== 'INPUT' });
       if (!visible()) { eye.sleep(); }
     }
     if (typeof suggestions === 'function' && !oneload.used) {

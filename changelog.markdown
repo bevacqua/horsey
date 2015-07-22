@@ -1,3 +1,7 @@
+# 2.5.4 Polypony
+
+- Use latest `bullseye`, which uses `getSeleccion` polyfill
+
 # 2.5.3 Area 51
 
 - Handle retargetting for `woofmark` editors
