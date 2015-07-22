@@ -11,8 +11,6 @@ var KEY_DOWN = 40;
 var cache = [];
 var doc = document;
 var docElement = doc.documentElement;
-var win = global;
-var rparagraph = /^<p>|<\/p>\n?$/g;
 
 function find (el) {
   var entry;
@@ -37,7 +35,6 @@ function horsey (el, options) {
   var render = o.render || defaultRenderer;
   var getText = o.getText || defaultGetText;
   var getValue = o.getValue || defaultGetValue;
-  var getSelection = o.getSelection || win.getSelection;
   var form = o.form;
   var limit = typeof o.limit === 'number' ? o.limit : Infinity;
   var suggestions = o.suggestions;
@@ -49,11 +46,8 @@ function horsey (el, options) {
   var eye;
   var deferredFiltering = defer(filtering);
   var attachment = el;
-  var editor = o.editor;
   var textInput;
   var anyInput;
-  var cachedChunks;
-  var cachedNeedle;
   var ranchorleft;
   var ranchorright;
 
@@ -67,24 +61,29 @@ function horsey (el, options) {
 
   var api = {
     add: add,
+    anchor: o.anchor,
     clear: clear,
     show: show,
     hide: hide,
     toggle: toggle,
     destroy: destroy,
     refreshPosition: refreshPosition,
-    defaultRenderer: defaultRenderer,
+    appendText: appendText,
+    appendHTML: appendHTML,
+    filterAnchoredText: filterAnchoredText,
+    filterAnchoredHTML: filterAnchoredHTML,
+    defaultAppendText: appendText,
+    defaultFilter: defaultFilter,
     defaultGetText: defaultGetText,
     defaultGetValue: defaultGetValue,
+    defaultRenderer: defaultRenderer,
     defaultSetter: defaultSetter,
-    defaultFilter: defaultFilter,
     retarget: retarget,
     attachment: attachment,
     list: ul,
     suggestions: []
   };
   var entry = { el: el, api: api };
-  var woofmarkLastMode;
 
   retarget(el);
   cache.push(entry);
@@ -164,19 +163,20 @@ function horsey (el, options) {
 
   function set (value) {
     if (o.anchor) {
-      return (isText() ? appendText : appendHTML)(value);
+      return (isText() ? api.appendText : api.appendHTML)(value);
     }
     userSet(value);
   }
 
   function filter (value, suggestion) {
     if (o.anchor) {
-      return (isText() ? filterAnchoredText : filterAnchoredHTML)(value, suggestion);
+      var il = (isText() ? api.filterAnchoredText : api.filterAnchoredHTML)(value, suggestion);
+      return il ? userFilter(il.input, il.suggestion) : false;
     }
     return userFilter(value, suggestion);
   }
 
-  function isText () { return !editor || isInput(attachment);}
+  function isText () { return isInput(attachment); }
   function visible () { return ul.className.indexOf('sey-show') !== -1; }
   function hidden (li) { return li.className.indexOf('sey-hide') !== -1; }
 
@@ -362,7 +362,7 @@ function horsey (el, options) {
       eye = null;
     }
     if (!remove) {
-      eye = bullseye(ul, attachment, { caret: anyInput && attachment.tagName !== 'INPUT', getSelection: getSelection });
+      eye = bullseye(ul, attachment, { caret: anyInput && attachment.tagName !== 'INPUT' });
       if (!visible()) { eye.sleep(); }
     }
     if (typeof suggestions === 'function' && !oneload.used) {
@@ -371,10 +371,6 @@ function horsey (el, options) {
       } else {
         oneload();
       }
-    }
-    if (editor) {
-      crossvent[op](editor.editable, 'horsey-filter', getChunksForFilters);
-      crossvent[op](editor.textarea, 'woofmark-mode-change', woofmarkModeChanged);
     }
     if (anyInput) {
       crossvent[op](attachment, 'keypress', deferredShow);
@@ -389,13 +385,6 @@ function horsey (el, options) {
     }
     if (o.autoHideOnClick) { crossvent[op](doc, 'click', hideOnClick); }
     if (form) { crossvent[op](form, 'submit', hide); }
-  }
-
-  function woofmarkModeChanged () {
-    if (editor.mode !== woofmarkLastMode) {
-      retarget(editor.mode === 'wysiwyg' ? editor.editable : editor.textarea);
-    }
-    woofmarkLastMode = editor.mode;
   }
 
   function destroy () {
@@ -438,72 +427,32 @@ function horsey (el, options) {
     };
   }
 
-  function getChunksForFilters () {
-    editor.runCommand(function gotContext (chunks) {
-      var text = chunks.before + chunks.selection;
-      var anchored = false;
-      var start = text.length;
-      while (anchored === false && start >= 0) {
-        cachedNeedle = text.substr(start - 1, text.length - start + 1);
-        anchored = ranchorleft.test(cachedNeedle);
-        start--;
-      }
-      if (anchored === false) {
-        cachedNeedle = null;
-      }
-      cachedChunks = chunks;
-    });
-  }
-
   function filterAnchoredText (q, suggestion) {
     var position = sell(el);
     var input = loopbackToAnchor(q, position).text;
     if (input) {
-      return userFilter(input, suggestion);
+      return { input: input, suggestion: suggestion };
     }
-  }
-
-  function filterAnchoredHTML (q, suggestion) {
-    if (cachedNeedle) {
-      return userFilter(cachedNeedle, suggestion);
-    }
-  }
-
-  function entitize (value) {
-    if (editor && editor.mode !== 'markdown') {
-      return editor.parseMarkdown(value).replace(rparagraph, '');
-    }
-    return value;
   }
 
   function appendText (value) {
-    var entity = entitize(value);
     var current = el.value;
     var position = sell(el);
     var input = loopbackToAnchor(current, position);
     var left = current.substr(0, input.start);
     var right = current.substr(input.start + input.text.length + (position.end - position.start));
-    var before = left + entity + ' ';
+    var before = left + value + ' ';
 
     el.value = before + right;
-    sell(el, {
-      start: before.length, end: before.length
-    });
+    sell(el, { start: before.length, end: before.length });
   }
 
-  function appendHTML (value) {
-    editor.runCommand(setEntity);
-    function setEntity (chunks) {
-      var entity = entitize(value);
-      var left = cachedChunks.before;
-      var len = left.length - 1;
-      while (len > 0 && !ranchorright.test(left)) {
-        left = left.substr(0, --len);
-      }
-      chunks.before = left.substr(0, len) + entity + '&nbsp;';
-      chunks.after = cachedChunks.selection + cachedChunks.after;
-      chunks.selection = '';
-    }
+  function filterAnchoredHTML () {
+    throw new Error('Anchoring in editable elements is disabled by default.');
+  }
+
+  function appendHTML () {
+    throw new Error('Anchoring in editable elements is disabled by default.');
   }
 }
 

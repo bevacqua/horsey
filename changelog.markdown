@@ -1,3 +1,11 @@
+# 2.6.0 Emancipation
+
+- Decoupled `horsey` from `woofmark`, extracted bridge into `banksy` module
+
+# 2.5.4 Polypony
+
+- Use latest `bullseye`, which uses `getSeleccion` polyfill
+
 # 2.5.3 Area 51
 
 - Handle retargetting for `woofmark` editors

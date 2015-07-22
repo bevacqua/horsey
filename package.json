@@ -1,6 +1,6 @@
 {
   "name": "horsey",
-  "version": "2.5.3",
+  "version": "2.6.0",
   "description": "Progressive and customizable autocomplete component",
   "main": "horsey.js",
   "scripts": {
@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/bevacqua/horsey",
   "dependencies": {
-    "bullseye": "1.4.3",
+    "bullseye": "1.4.5",
     "crossvent": "1.5.0",
     "fuzzysearch": "1.0.3",
     "sell": "1.0.0"
