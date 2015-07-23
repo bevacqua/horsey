@@ -4,6 +4,7 @@ var sell = require('sell');
 var crossvent = require('crossvent');
 var bullseye = require('bullseye');
 var fuzzysearch = require('fuzzysearch');
+var KEY_BACKSPACE = 8;
 var KEY_ENTER = 13;
 var KEY_ESC = 27;
 var KEY_UP = 38;
@@ -264,6 +265,10 @@ function horsey (el, options) {
       if (shown) {
         move(true);
         stop(e);
+      }
+    } else if (which === KEY_BACKSPACE) {
+      if (anyInput && o.autoShowOnUpDown) {
+        show();
       }
     } else if (shown) {
       if (which === KEY_ENTER) {
