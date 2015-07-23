@@ -1,3 +1,7 @@
+# 2.6.1 Bullying
+
+- Updated `bullseye@1.4.6`
+
 # 2.6.0 Emancipation
 
 - Decoupled `horsey` from `woofmark`, extracted bridge into `banksy` module
