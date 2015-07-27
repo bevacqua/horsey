@@ -162,8 +162,12 @@ function horsey (el, options) {
     });
 
     // If no selection is found, then select the first li
-    if (!isSelectionFound && ul.firstChild) {
-      select(ul.firstChild);
+    if (!isSelectionFound) {
+      if (ul.firstChild) {
+        select(ul.firstChild);
+      } else {
+        selection = null;
+      }
     }
   }
 
@@ -276,10 +280,10 @@ function horsey (el, options) {
       if (which === KEY_ENTER) {
         if (selection) {
           crossvent.fabricate(selection, 'click');
+          stop(e);
         } else {
           hide();
         }
-        stop(e);
       } else if (which === KEY_ESC) {
         hide();
         stop(e);
