@@ -264,7 +264,7 @@ function horsey (el, options) {
       if (anyInput && o.autoShowOnUpDown) {
         show();
       }
-      if (shown) {
+      if (shown && selection) {
         move();
         stop(e);
       }
@@ -272,7 +272,7 @@ function horsey (el, options) {
       if (anyInput && o.autoShowOnUpDown) {
         show();
       }
-      if (shown) {
+      if (shown && selection) {
         move(true);
         stop(e);
       }
