@@ -16,6 +16,21 @@ void function () {
     }
   });
 
+  horsey(document.querySelector('#lazyrender'), {
+    limit: 7,
+    suggestions: function (done) {
+      fetch('example/names.json')
+          .then(function(response) {
+            return response.json()
+          }).then(function(nameList) {
+            document.getElementById('lazyrender-text').textContent = 'Loaded ' + nameList.length + ' results!'
+            done(nameList);
+          }).catch(function(ex) {
+            document.getElementById('lazyrender-text').textContent = 'Error: ' + ex;
+          });
+    }
+  });
+
   horsey(document.querySelector('#kv'), {
     suggestions: [
       { value: 'banana', text: 'Bananas from Amazon Rainforest' },

@@ -51,6 +51,7 @@ function horsey (el, options) {
   var anyInput;
   var ranchorleft;
   var ranchorright;
+  var visibility = {}; // getValue(suggestion) -> isVisible
 
   if (o.autoHideOnBlur === void 0) { o.autoHideOnBlur = true; }
   if (o.autoHideOnClick === void 0) { o.autoHideOnClick = true; }
@@ -115,51 +116,64 @@ function horsey (el, options) {
   }
 
   function loaded (suggestions) {
-    suggestions.forEach(add);
-    api.suggestions = suggestions;
+    suggestions.forEach(function(suggestion){
+      api.suggestions.push(suggestion);
+    });
+    rebuild();
   }
 
   function clear () {
+    api.suggestions = [];
+    rebuild();
+  }
+
+  function rebuild () {
+    // Remove all li children if any
     while (ul.lastChild) {
       ul.removeChild(ul.lastChild);
+    }
+
+    var isSelectionFound = false;
+
+    api.suggestions.forEach(function(suggestion) {
+      if (visibility[getValue(suggestion)]) {
+        var li = tag('li', 'sey-item');
+        var value = getValue(suggestion);
+        li.setAttribute('data-suggestion-value', value);
+
+        crossvent.add(li, 'click', function () {
+          var value = getValue(suggestion);
+          set(value);
+          hide();
+          attachment.focus();
+          crossvent.fabricate(attachment, 'horsey-selected', value);
+        });
+
+        render(li, suggestion);
+        ul.appendChild(li);
+
+        // If this item was already selected, then select it again
+        if (!isSelectionFound && selection && value === selection.getAttribute('data-suggestion-value')) {
+          select(li);
+          isSelectionFound = true;
+        }
+      }
+    });
+
+    // If no selection is found, then select the first li
+    if (!isSelectionFound) {
+      if (ul.firstChild) {
+        select(ul.firstChild);
+      } else {
+        selection = null;
+      }
     }
   }
 
   function add (suggestion) {
-    var li = tag('li', 'sey-item');
-    render(li, suggestion);
-    crossvent.add(li, 'click', clickedSuggestion);
-    crossvent.add(li, 'horsey-filter', filterItem);
-    crossvent.add(li, 'horsey-hide', hideItem);
-    ul.appendChild(li);
     api.suggestions.push(suggestion);
-    return li;
-
-    function clickedSuggestion () {
-      var value = getValue(suggestion);
-      set(value);
-      hide();
-      attachment.focus();
-      crossvent.fabricate(attachment, 'horsey-selected', value);
-    }
-
-    function filterItem () {
-      var value = textInput ? el.value : el.innerHTML;
-      if (filter(value, suggestion)) {
-        li.className = li.className.replace(/ sey-hide/g, '');
-      } else {
-        crossvent.fabricate(li, 'horsey-hide');
-      }
-    }
-
-    function hideItem () {
-      if (!hidden(li)) {
-        li.className += ' sey-hide';
-        if (selection === li) {
-          unselect();
-        }
-      }
-    }
+    visibility[getValue(suggestion)] = true;
+    rebuild();
   }
 
   function set (value) {
@@ -179,11 +193,11 @@ function horsey (el, options) {
 
   function isText () { return isInput(attachment); }
   function visible () { return ul.className.indexOf('sey-show') !== -1; }
-  function hidden (li) { return li.className.indexOf('sey-hide') !== -1; }
 
   function show () {
     if (!visible()) {
       ul.className += ' sey-show';
+      filtering();
       eye.refresh();
       crossvent.fabricate(attachment, 'horsey-show');
     }
@@ -231,13 +245,9 @@ function horsey (el, options) {
     }
     var first = up ? 'lastChild' : 'firstChild';
     var next = up ? 'previousSibling' : 'nextSibling';
-    var suggestion = selection && selection[next] || ul[first];
+    var li = selection && selection[next] || ul[first];
 
-    select(suggestion);
-
-    if (hidden(suggestion)) {
-      move(up, moves ? moves + 1 : 1);
-    }
+    select(li);
   }
 
   function hide () {
@@ -254,7 +264,7 @@ function horsey (el, options) {
       if (anyInput && o.autoShowOnUpDown) {
         show();
       }
-      if (shown) {
+      if (shown && selection) {
         move();
         stop(e);
       }
@@ -262,7 +272,7 @@ function horsey (el, options) {
       if (anyInput && o.autoShowOnUpDown) {
         show();
       }
-      if (shown) {
+      if (shown && selection) {
         move(true);
         stop(e);
       }
@@ -274,10 +284,10 @@ function horsey (el, options) {
       if (which === KEY_ENTER) {
         if (selection) {
           crossvent.fabricate(selection, 'click');
+          stop(e);
         } else {
           hide();
         }
-        stop(e);
       } else if (which === KEY_ESC) {
         hide();
         stop(e);
@@ -295,26 +305,20 @@ function horsey (el, options) {
       return;
     }
     crossvent.fabricate(attachment, 'horsey-filter');
-    var li = ul.firstChild;
+
+    var q = textInput ? el.value : el.innerHTML;
+
     var count = 0;
-    while (li) {
-      if (count >= limit) {
-        crossvent.fabricate(li, 'horsey-hide');
+    api.suggestions.forEach(function(suggestion) {
+      if (count < limit && filter(q, suggestion)) {
+        visibility[getValue(suggestion)] = true;
+        count++;
+      } else {
+        visibility[getValue(suggestion)] = false;
       }
-      if (count < limit) {
-        crossvent.fabricate(li, 'horsey-filter');
-        if (li.className.indexOf('sey-hide') === -1) {
-          count++;
-        }
-      }
-      li = li.nextSibling;
-    }
-    if (!selection) {
-      move();
-    }
-    if (!selection) {
-      hide();
-    }
+    });
+
+    rebuild();
   }
 
   function deferredFilteringNoEnter (e) {
