@@ -41,7 +41,12 @@ function horsey (el, options) {
   var suggestions = o.suggestions;
   var userFilter = o.filter || defaultFilter;
   var userSet = o.set || defaultSetter;
-  var ul = tag('ul', 'sey-list');
+  var listClass = o.listClass || 'sey-list';
+  var itemClass = o.itemClass || 'sey-item';
+  var selectedClass = o.selectedClass || 'sey-selected';
+  var showClass = o.showClass || 'sey-show';
+  var hideClass = o.hideClass || 'sey-hide';
+  var ul = tag('ul', listClass);
   var selection = null;
   var oneload = once(loading);
   var eye;
@@ -126,7 +131,7 @@ function horsey (el, options) {
   }
 
   function add (suggestion) {
-    var li = tag('li', 'sey-item');
+    var li = tag('li', itemClass);
     render(li, suggestion);
     crossvent.add(li, 'click', clickedSuggestion);
     crossvent.add(li, 'horsey-filter', filterItem);
@@ -140,13 +145,14 @@ function horsey (el, options) {
       set(value);
       hide();
       attachment.focus();
-      crossvent.fabricate(attachment, 'horsey-selected', value);
+      crossvent.fabricate(attachment, selectedClass, value);
     }
 
     function filterItem () {
       var value = textInput ? el.value : el.innerHTML;
+      var hideRegex = new RegExp(' ' + hideClass, 'g');
       if (filter(value, suggestion)) {
-        li.className = li.className.replace(/ sey-hide/g, '');
+        li.className = li.className.replace(hideRegex, '');
       } else {
         crossvent.fabricate(li, 'horsey-hide');
       }
@@ -154,7 +160,7 @@ function horsey (el, options) {
 
     function hideItem () {
       if (!hidden(li)) {
-        li.className += ' sey-hide';
+        li.className += ' ' + hideClass;
         if (selection === li) {
           unselect();
         }
@@ -178,12 +184,12 @@ function horsey (el, options) {
   }
 
   function isText () { return isInput(attachment); }
-  function visible () { return ul.className.indexOf('sey-show') !== -1; }
-  function hidden (li) { return li.className.indexOf('sey-hide') !== -1; }
+  function visible () { return ul.className.indexOf(showClass) !== -1; }
+  function hidden (li) { return li.className.indexOf(showClass) !== -1; }
 
   function show () {
     if (!visible()) {
-      ul.className += ' sey-show';
+      ul.className += ' ' + showClass;
       eye.refresh();
       crossvent.fabricate(attachment, 'horsey-show');
     }
@@ -209,13 +215,14 @@ function horsey (el, options) {
     unselect();
     if (suggestion) {
       selection = suggestion;
-      selection.className += ' sey-selected';
+      selection.className += ' ' + selectedClass;
     }
   }
 
   function unselect () {
     if (selection) {
-      selection.className = selection.className.replace(/ sey-selected/g, '');
+      var selectedRegex = new RegExp(' ' + selectedClass, 'g');
+      selection.className = selection.className.replace(selectedRegex, '');
       selection = null;
     }
   }
@@ -242,7 +249,8 @@ function horsey (el, options) {
 
   function hide () {
     eye.sleep();
-    ul.className = ul.className.replace(/ sey-show/g, '');
+    var showRegex = new RegExp(' ' + showClass, 'g');
+    ul.className = ul.className.replace(showRegex, '');
     unselect();
     crossvent.fabricate(attachment, 'horsey-hide');
   }
@@ -303,7 +311,7 @@ function horsey (el, options) {
       }
       if (count < limit) {
         crossvent.fabricate(li, 'horsey-filter');
-        if (li.className.indexOf('sey-hide') === -1) {
+        if (li.className.indexOf(hideClass) === -1) {
           count++;
         }
       }
