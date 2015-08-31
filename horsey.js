@@ -145,7 +145,7 @@ function horsey (el, options) {
       set(value);
       hide();
       attachment.focus();
-      crossvent.fabricate(attachment, selectedClass, value);
+      crossvent.fabricate(attachment, 'horsey-selected', value);
     }
 
     function filterItem () {
@@ -185,7 +185,7 @@ function horsey (el, options) {
 
   function isText () { return isInput(attachment); }
   function visible () { return ul.className.indexOf(showClass) !== -1; }
-  function hidden (li) { return li.className.indexOf(showClass) !== -1; }
+  function hidden (li) { return li.className.indexOf(hideClass) !== -1; }
 
   function show () {
     if (!visible()) {
