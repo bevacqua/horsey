@@ -27,9 +27,12 @@ horsey(document.querySelector('input'), {
     <pre>
       <code>
 horsey(document.querySelector('input'), {
-  suggestions: function (done) {
+  suggestions: function (value, done) {
+    var items = [ 'banana', 'apple', 'orange' ];
     setTimeout(function () {
-      done(['banana', 'apple', 'orange']);
+      done(items.filter(function(item) {
+        return item.indexOf(value) !== -1;
+      }));
     }, 2000);
   }
 });

@@ -43,7 +43,6 @@ function horsey (el, options) {
   var userSet = o.set || defaultSetter;
   var ul = tag('ul', 'sey-list');
   var selection = null;
-  var oneload = once(loading);
   var eye;
   var deferredFiltering = defer(filtering);
   var attachment = el;
@@ -51,6 +50,7 @@ function horsey (el, options) {
   var anyInput;
   var ranchorleft;
   var ranchorright;
+  var suggestionsLoad = { counter: 0, value: null };
 
   if (o.autoHideOnBlur === void 0) { o.autoHideOnBlur = true; }
   if (o.autoHideOnClick === void 0) { o.autoHideOnClick = true; }
@@ -92,7 +92,7 @@ function horsey (el, options) {
   el.setAttribute('autocomplete', 'off');
 
   if (Array.isArray(suggestions)) {
-    loaded(suggestions);
+    loaded(suggestions, false);
   }
 
   return api;
@@ -109,14 +109,32 @@ function horsey (el, options) {
     if (eye) { eye.refresh(); }
   }
 
-  function loading () {
-    crossvent.remove(attachment, 'focus', oneload);
-    suggestions(loaded);
+  function loading (forceShow) {
+    if (typeof suggestions === 'function') {
+      crossvent.remove(attachment, 'focus', loading);
+      var value = textInput ? el.value : el.innerHTML;
+      if (value != suggestionsLoad.value) {
+        suggestionsLoad.counter++;
+        suggestionsLoad.value = value;
+
+        var counter = suggestionsLoad.counter;
+        suggestions(value, function(s) {
+          if (suggestionsLoad.counter === counter) {
+            loaded(s, forceShow);
+          }
+        });
+      }
+    }
   }
 
-  function loaded (suggestions) {
+  function loaded (suggestions, forceShow) {
+    clear();
     suggestions.forEach(add);
     api.suggestions = suggestions;
+    if (forceShow) {
+      show();
+    }
+    filtering();
   }
 
   function clear () {
@@ -294,6 +312,7 @@ function horsey (el, options) {
     if (!visible()) {
       return;
     }
+    loading(true);
     crossvent.fabricate(attachment, 'horsey-filter');
     var li = ul.firstChild;
     var count = 0;
@@ -370,12 +389,10 @@ function horsey (el, options) {
       eye = bullseye(ul, attachment, { caret: anyInput && attachment.tagName !== 'INPUT' });
       if (!visible()) { eye.sleep(); }
     }
-    if (typeof suggestions === 'function' && !oneload.used) {
-      if (remove || (anyInput && doc.activeElement !== attachment)) {
-        crossvent[op](attachment, 'focus', oneload);
-      } else {
-        oneload();
-      }
+    if (remove || (anyInput && doc.activeElement !== attachment)) {
+      crossvent[op](attachment, 'focus', loading);
+    } else {
+      loading();
     }
     if (anyInput) {
       crossvent[op](attachment, 'keypress', deferredShow);
@@ -481,17 +498,7 @@ function tag (type, className) {
   return el;
 }
 
-function once (fn) {
-  var disposed;
-  function disposable () {
-    if (disposed) { return; }
-    disposable.used = disposed = true;
-    (fn || noop).apply(null, arguments);
-  }
-  return disposable;
-}
 function defer (fn) { return function () { setTimeout(fn, 0); }; }
-function noop () {}
 
 function isEditable (el) {
   var value = el.getAttribute('contentEditable');

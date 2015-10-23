@@ -47,7 +47,7 @@ Entry point is `horsey(el, options)`. Configuration options are detailed below. 
 
 An array containing a list of suggestions to be presented to the user. Each suggestion can be either a string or an object. If an object is used, the `text` property will be used for displaying the suggestion and the `value` property will be used when a suggestion is selected.
 
-Alternatively, the `suggestions` can be a function. In this case, the function will be called when the input is focused, and expected to return a list of suggestions through a callback.
+Alternatively, the `suggestions` can be a function. In this case, the function will be called with the current input value when the input is focused, and expected to return a list of suggestions through a callback.
 
 ###### Example
 
@@ -61,11 +61,11 @@ horsey(el, {
 
 ###### Example
 
-Here's how you would lazy load your suggestions, except, you know, using actual AJAX calls. Note that this method is called a single time.
+Here's how you would lazy load your suggestions, except, you know, using actual AJAX calls. Every time the input value changes, the suggestions function will be called:
 
 ```js
 horsey(el, {
-  suggestions: function (done) {
+  suggestions: function (value, done) {
     setTimeout(function () {
       done(['sports', 'drama', 'romantic comedy', 'science fiction', 'thriller']);
     }, 2000);
