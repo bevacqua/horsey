@@ -113,7 +113,7 @@ function horsey (el, options) {
     if (typeof suggestions === 'function') {
       crossvent.remove(attachment, 'focus', loading);
       var value = textInput ? el.value : el.innerHTML;
-      if (value != suggestionsLoad.value) {
+      if (value !== suggestionsLoad.value) {
         suggestionsLoad.counter++;
         suggestionsLoad.value = value;
 
