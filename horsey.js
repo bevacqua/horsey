@@ -138,6 +138,7 @@ function horsey (el, options) {
   }
 
   function clear () {
+    unselect();
     while (ul.lastChild) {
       ul.removeChild(ul.lastChild);
     }
