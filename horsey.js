@@ -9,6 +9,7 @@ var KEY_ENTER = 13;
 var KEY_ESC = 27;
 var KEY_UP = 38;
 var KEY_DOWN = 40;
+var KEY_TAB = 9;
 var cache = [];
 var doc = document;
 var docElement = doc.documentElement;
@@ -319,7 +320,7 @@ function horsey (el, options) {
 
   function deferredFilteringNoEnter (e) {
     var which = e.which || e.keyCode;
-    if (which === KEY_ENTER) {
+    if (which === KEY_ENTER || which === KEY_TAB) {
       return;
     }
     deferredFiltering();
@@ -327,7 +328,7 @@ function horsey (el, options) {
 
   function deferredShow (e) {
     var which = e.which || e.keyCode;
-    if (which === KEY_ENTER) {
+    if (which === KEY_ENTER || which === KEY_TAB) {
       return;
     }
     setTimeout(show, 0);
@@ -378,8 +379,8 @@ function horsey (el, options) {
       }
     }
     if (anyInput) {
-      crossvent[op](attachment, 'keypress', deferredShow);
-      crossvent[op](attachment, 'keypress', deferredFiltering);
+      crossvent[op](attachment, 'keyup', deferredShow);
+      crossvent[op](attachment, 'keyup', deferredFiltering);
       crossvent[op](attachment, 'keydown', deferredFilteringNoEnter);
       crossvent[op](attachment, 'paste', deferredFiltering);
       crossvent[op](attachment, 'keydown', keydown);
