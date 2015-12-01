@@ -384,7 +384,14 @@ function horsey (el, options) {
       crossvent[op](attachment, 'keydown', deferredFilteringNoEnter);
       crossvent[op](attachment, 'paste', deferredFiltering);
       crossvent[op](attachment, 'keydown', keydown);
-      if (o.autoHideOnBlur) { crossvent[op](docElement, 'focus', hideOnBlur, true); }
+      if (o.autoHideOnBlur) {
+        crossvent[op](attachment, 'keydown', function(e){
+          var which = e.which || e.keyCode;
+          if (which === KEY_TAB) {
+            hide();
+          }
+        });
+      }
     } else {
       crossvent[op](attachment, 'click', toggler);
       crossvent[op](docElement, 'keydown', keydown);
