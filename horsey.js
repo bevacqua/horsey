@@ -379,8 +379,8 @@ function horsey (el, options) {
       }
     }
     if (anyInput) {
-      crossvent[op](attachment, 'keyup', deferredShow);
-      crossvent[op](attachment, 'keyup', deferredFiltering);
+      crossvent[op](attachment, 'input', deferredShow);
+      crossvent[op](attachment, 'input', deferredFiltering);
       crossvent[op](attachment, 'keydown', deferredFilteringNoEnter);
       crossvent[op](attachment, 'paste', deferredFiltering);
       crossvent[op](attachment, 'keydown', keydown);
