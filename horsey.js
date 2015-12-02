@@ -347,6 +347,13 @@ function horsey (el, options) {
     }
   }
 
+  function hideOnBlur (e) {
+    var which = e.which || e.keyCode;
+    if (which === KEY_TAB) {
+      hide();
+    }
+  }
+
   function hideOnClick (e) {
     if (horseyEventTarget(e)) {
       return;
@@ -377,14 +384,7 @@ function horsey (el, options) {
       crossvent[op](attachment, 'keydown', deferredFilteringNoEnter);
       crossvent[op](attachment, 'paste', deferredFiltering);
       crossvent[op](attachment, 'keydown', keydown);
-      if (o.autoHideOnBlur) {
-        crossvent[op](attachment, 'keydown', function(e){
-          var which = e.which || e.keyCode;
-          if (which === KEY_TAB) {
-            hide();
-          }
-        });
-      }
+      if (o.autoHideOnBlur) { crossvent[op](attachment, 'keydown', hideOnBlur); }
     } else {
       crossvent[op](attachment, 'click', toggler);
       crossvent[op](docElement, 'keydown', keydown);
