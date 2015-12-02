@@ -128,8 +128,7 @@ function horsey (el, options) {
   function add (suggestion) {
     var li = tag('li', 'sey-item');
     render(li, suggestion);
-    var clickEvent = ('onpointerdown' in window) ? 'pointerdown' : 'click';
-    crossvent.add(li, clickEvent, clickedSuggestion);
+    crossvent.add(li, 'click', clickedSuggestion);
     crossvent.add(li, 'horsey-filter', filterItem);
     crossvent.add(li, 'horsey-hide', hideItem);
     ul.appendChild(li);
