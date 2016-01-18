@@ -6,12 +6,15 @@ void function () {
   });
 
   horsey(document.querySelector('#ly'), {
-    suggestions: function (done) {
+    suggestions: function (value, done) {
+      var items = [ 'banana', 'apple', 'orange' ];
       var start = new Date();
       lyr.innerText = 'Loading...';
       setTimeout(function () {
         lyr.innerText = 'Loaded in ' + (new Date() - start) + 'ms!';
-        done(['banana', 'apple', 'orange']);
+        done(items.filter(function(item) {
+          return item.indexOf(value) !== -1;
+        }));
       }, 2000);
     }
   });
