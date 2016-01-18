@@ -47,7 +47,7 @@ Entry point is `horsey(el, options)`. Configuration options are detailed below. 
 
 An array containing a list of suggestions to be presented to the user. Each suggestion can be either a string or an object. If an object is used, the `text` property will be used for displaying the suggestion and the `value` property will be used when a suggestion is selected.
 
-Alternatively, the `suggestions` can be a function. In this case, the function will be called when the input is focused, and expected to return a list of suggestions through a callback.
+Alternatively, the `suggestions` can be a function. In this case, the function will be called with the current input value when the input is focused, and expected to return a list of suggestions through a callback.
 
 ###### Example
 
@@ -61,11 +61,11 @@ horsey(el, {
 
 ###### Example
 
-Here's how you would lazy load your suggestions, except, you know, using actual AJAX calls. Note that this method is called a single time.
+Here's how you would lazy load your suggestions, except, you know, using actual AJAX calls. Every time the input value changes, the suggestions function will be called:
 
 ```js
 horsey(el, {
-  suggestions: function (done) {
+  suggestions: function (value, done) {
     setTimeout(function () {
       done(['sports', 'drama', 'romantic comedy', 'science fiction', 'thriller']);
     }, 2000);
@@ -178,21 +178,6 @@ horsey(el, {
 
 A string that will be used as a regular expression to figure out _when_ the suggestions should be presented. If an `anchor` is set, the text will be appended instead of replaced, and **the `set` option will be ignored**.
 
-### `editor`
-
-You can provide `horsey` with a [woofmark editor instance][6] as to seamlessly enable the autocompletion functionality across all modes in the editor, and not just when the editor is using a `<textarea>`.
-
-###### Example
-
-```js
-var horsey = require('horsey');
-var woofmark = require('woofmark');
-var editor = woofmark(el);
-var horse = horsey(el, {
-  editor: editor
-});
-```
-
 ### `autoHideOnClick`
 
 Hides the autocomplete list whenever something other than the `el` or any child of the autocomplete's `<ul>` element is clicked. Defaults to `true`.
@@ -283,6 +268,10 @@ Unbind horsey-related events from the `el`, remove the autocomplete list. It's l
 
 Detaches this `horsey` instance from `el`, removing events and whatnot, and then attaches the instance to `target`. Note that `horsey.find` will still only work with `el`. This method is mostly for internal purposes, but it's also useful if you're developing a text editor with multiple modes (particularly if it switches between a `<textarea>` and a content-editable `<div>`).
 
+### `.anchor`
+
+The anchor value that was originally passed into `horse` as `options.anchor`.
+
 ### `.defaultRenderer`
 
 The default `render` method
@@ -303,6 +292,26 @@ The default `set` method
 
 The default `filter` method
 
+### `.appendText`
+
+Method called whenever we have an `anchor` and we need to append a suggestion to an input field. Defaults to `defaultAppendText`.
+
+### `.appendHTML`
+
+Method called whenever we have an `anchor` and we need to append a suggestion for a `contentEditable` element. **Unsupported by default**. Provided by [banksy][8].
+
+### `.defaultAppendText`
+
+Default `appendText` implementation
+
+### `.filterAnchoredText`
+
+Method called whenever we have an `anchor` and we need to filter a suggestion for an input field.
+
+### `.filterAnchoredHTML`
+
+Method called whenever we have an `anchor` and we need to filter a suggestion for a `contentEditable` element. **Unsupported by default**. Provided by [banksy][8].
+
 # Events
 
 Once you've instantiated a `horsey`, some propietary synthetic events will be emitted on the provided `el`.
@@ -314,6 +323,10 @@ Name              | Description
 `horsey-hide`     | Fired whenever the autocomplete list is hidden
 `horsey-filter`   | Fired whenever the autocomplete list is about to be filtered. Useful to prime the filter method
 
+### Usage with [woofmark][7]
+
+See [banksy][8] to integrate `horsey` into [woofmark][7].
+
 # License
 
 MIT
@@ -324,3 +337,5 @@ MIT
 [4]: https://github.com/bevacqua/fuzzysearch
 [5]: http://i.imgur.com/imDFC0C.png
 [6]: https://github.com/bevacqua/woofmark#editor
+[7]: https://github.com/bevacqua/woofmark
+[8]: https://github.com/bevacqua/banksy

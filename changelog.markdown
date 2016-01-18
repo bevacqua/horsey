@@ -1,3 +1,8 @@
+# 3.0.0 Live from Liverpool
+
+- Introduced live suggestions
+- Introduced fixes for Internet Explorer
+
 # 2.6.1 Bullying
 
 - Updated `bullseye@1.4.6`

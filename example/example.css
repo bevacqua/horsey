@@ -51,6 +51,10 @@ pre code {
   font-size: 18px;
 }
 
+pre {
+  overflow-x: auto;
+}
+
 label {
   display: block;
   margin-bottom: 15px;
