@@ -320,7 +320,7 @@ function horsey (el, options) {
 
   function deferredFilteringNoEnter (e) {
     var which = e.which || e.keyCode;
-    if (which === KEY_ENTER || which === KEY_TAB) {
+    if (which === KEY_ENTER) {
       return;
     }
     deferredFiltering();
@@ -328,7 +328,7 @@ function horsey (el, options) {
 
   function deferredShow (e) {
     var which = e.which || e.keyCode;
-    if (which === KEY_ENTER || which === KEY_TAB) {
+    if (which === KEY_ENTER) {
       return;
     }
     setTimeout(show, 0);
@@ -379,8 +379,8 @@ function horsey (el, options) {
       }
     }
     if (anyInput) {
-      crossvent[op](attachment, 'input', deferredShow);
-      crossvent[op](attachment, 'input', deferredFiltering);
+      crossvent[op](attachment, 'keypress', deferredShow);
+      crossvent[op](attachment, 'keypress', deferredFiltering);
       crossvent[op](attachment, 'keydown', deferredFilteringNoEnter);
       crossvent[op](attachment, 'paste', deferredFiltering);
       crossvent[op](attachment, 'keydown', keydown);
