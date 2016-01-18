@@ -9,6 +9,7 @@ var KEY_ENTER = 13;
 var KEY_ESC = 27;
 var KEY_UP = 38;
 var KEY_DOWN = 40;
+var KEY_TAB = 9;
 var cache = [];
 var doc = document;
 var docElement = doc.documentElement;
@@ -347,10 +348,10 @@ function horsey (el, options) {
   }
 
   function hideOnBlur (e) {
-    if (horseyEventTarget(e)) {
-      return;
+    var which = e.which || e.keyCode;
+    if (which === KEY_TAB) {
+      hide();
     }
-    hide();
   }
 
   function hideOnClick (e) {
@@ -383,7 +384,7 @@ function horsey (el, options) {
       crossvent[op](attachment, 'keydown', deferredFilteringNoEnter);
       crossvent[op](attachment, 'paste', deferredFiltering);
       crossvent[op](attachment, 'keydown', keydown);
-      if (o.autoHideOnBlur) { crossvent[op](docElement, 'focus', hideOnBlur, true); }
+      if (o.autoHideOnBlur) { crossvent[op](attachment, 'keydown', hideOnBlur); }
     } else {
       crossvent[op](attachment, 'click', toggler);
       crossvent[op](docElement, 'keydown', keydown);
