@@ -130,6 +130,23 @@ horsey(document.querySelector('div'), {
       </code>
     </pre>
   </div>
+  <!-- for chinese unicode -->
+  <div class='parent'>
+    <label for='locale'>You can also use in Chinese or other locales: </label>
+    <input id='locale'/>
+    <pre>
+      <code>
+horsey(document.querySelector('input'), {
+  suggestions: [
+    { value: 'javascript', text: 'js全栈开发者' },
+    { value: 'python', text: '真爱生命，我用python' },
+    { value: 'php', text: '世界上最好的语言，没有之一' },
+    { value: 'java', text: '我的最爱是java' }
+  ]
+});
+      </code>
+    </pre>
+  </div>
 </div>
 <h3>Get it on GitHub! <a href='https://github.com/bevacqua/horsey'>bevacqua/horsey</a></h3>
 <script src='dist/horsey.js'></script>

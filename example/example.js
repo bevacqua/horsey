@@ -75,6 +75,15 @@ void function () {
     ]
   });
 
+  horsey(document.querySelector('#locale'), {
+  suggestions: [
+    { value: 'javascript', text: 'js全栈开发者' },
+    { value: 'python', text: '真爱生命，我用python' },
+    { value: 'php', text: '世界上最好的语言，没有之一' },
+    { value: 'java', text: '我的最爱是java' }
+  ]
+});
+
   function events (el, type, fn) {
     if (el.addEventListener) {
       el.addEventListener(type, fn);
