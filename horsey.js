@@ -98,6 +98,10 @@ function horsey (el, options) {
 
   return api;
 
+  function inputValue() {
+    return textInput ? attachment.value : attachment.innerHTML;
+  }
+
   function retarget (el) {
     inputEvents(true);
     attachment = api.attachment = el;
@@ -113,7 +117,7 @@ function horsey (el, options) {
   function loading (forceShow) {
     if (typeof suggestions === 'function') {
       crossvent.remove(attachment, 'focus', loading);
-      var value = textInput ? el.value : el.innerHTML;
+      var value = inputValue();
       if (value !== suggestionsLoad.value) {
         suggestionsLoad.counter++;
         suggestionsLoad.value = value;
@@ -164,7 +168,7 @@ function horsey (el, options) {
     }
 
     function filterItem () {
-      var value = textInput ? el.value : el.innerHTML;
+      var value = inputValue();
       if (filter(value, suggestion)) {
         li.className = li.className.replace(/ sey-hide/g, '');
       } else {
@@ -419,9 +423,9 @@ function horsey (el, options) {
 
   function defaultSetter (value) {
     if (textInput) {
-      el.value = value;
+      attachment.value = value;
     } else {
-      el.innerHTML = value;
+      attachment.innerHTML = value;
     }
   }
 
@@ -452,7 +456,7 @@ function horsey (el, options) {
   }
 
   function filterAnchoredText (q, suggestion) {
-    var position = sell(el);
+    var position = sell(attachment);
     var input = loopbackToAnchor(q, position).text;
     if (input) {
       return { input: input, suggestion: suggestion };
@@ -460,15 +464,15 @@ function horsey (el, options) {
   }
 
   function appendText (value) {
-    var current = el.value;
-    var position = sell(el);
+    var current = attachment.value;
+    var position = sell(attachment);
     var input = loopbackToAnchor(current, position);
     var left = current.substr(0, input.start);
     var right = current.substr(input.start + input.text.length + (position.end - position.start));
     var before = left + value + ' ';
 
-    el.value = before + right;
-    sell(el, { start: before.length, end: before.length });
+    attachment.value = before + right;
+    sell(attachment, { start: before.length, end: before.length });
   }
 
   function filterAnchoredHTML () {
