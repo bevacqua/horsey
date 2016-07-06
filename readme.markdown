@@ -43,272 +43,156 @@ bower install horsey --save
 
 Entry point is `horsey(el, options)`. Configuration options are detailed below. This method [returns a small API](#api) into the `horsey` autocomplete list instance. You can also find existing horsey instances using `horsey.find`.
 
-### `suggestions`
+## `predictNextSearch(info)`
 
-An array containing a list of suggestions to be presented to the user. Each suggestion can be either a string or an object. If an object is used, the `text` property will be used for displaying the suggestion and the `value` property will be used when a suggestion is selected.
+Runs when a tag is inserted. The returned string is used to pre-fill the text input. Useful to avoid repetitive user input. The suggestion list can be used to choose a prefix based on the previous list of suggestions.
 
-Alternatively, the `suggestions` can be a function. In this case, the function will be called with the current input value when the input is focused, and expected to return a list of suggestions through a callback.
+- `info.input` contains the user input at the time a suggestion was selected
+- `info.suggestions` contains the list of suggestions at the time a suggestion was selected
+- `info.selection` contains the suggestion selected by the user
 
-###### Example
+## `cache`
 
-The example below would create an instance with a predefined set of suggestions.
+Can be an object that will be used to store queries and suggestions. You can provide a `cache.duration` as well, which defaults to one day and is specified in seconds. The `cache.duration` is used to figure out whether cache entries are fresh or stale.
+You can disable autocomplete caching by setting `cache` to `false`.
+
+## `limit`
+
+Can be a number that determines the maximum amount of suggestions shown in the autocomplete list.
+
+## `filter(query, suggestion)`
+
+By default suggestions are filtered using the [`fuzzysearch`](https://github.com/bevacqua/fuzzysearch) algorithm. You can change that and use your own `filter` algorithm instead.
+
+## `source`
+
+A `source(data, done)` should be set to a function. The `done(err, items)` function should provide the `items` for the provided `data.input`.
+
+- `data.input` is a query for which suggestions should be provided
+- `data.limit` is the previously specified `options.limit`
+- `data.previousSelection` is the last suggestion selected by the user
+- `data.previousSuggestions` is the last list of suggestions provided to the user
+
+The expected schema for the `items` object result is outlined below.
 
 ```js
-horsey(el, {
-  suggestions: ['sports', 'drama', 'romantic comedy', 'science fiction', 'thriller']
-});
+[category1, category2, category3]
 ```
 
-###### Example
-
-Here's how you would lazy load your suggestions, except, you know, using actual AJAX calls. Every time the input value changes, the suggestions function will be called:
+Each category is expected to follow the next schema. The `id` is optional, all category objects without an `id` will be treated as if their `id` was `'default'`. Note that categories under the same `id` will be merged together when displaying the autocomplete suggestions.
 
 ```js
-horsey(el, {
-  suggestions: function (value, done) {
-    setTimeout(function () {
-      done(['sports', 'drama', 'romantic comedy', 'science fiction', 'thriller']);
-    }, 2000);
-  }
-});
-```
-
-### `filter`
-
-Allows you to hide suggestions based on user input. The default implementation uses the [fuzzysearch][4] module to discard suggestions that don't contain anything similar to the user input.
-
-###### Default
-
-```js
-function defaultFilter (q, suggestion) {
-  return fuzzysearch(q, getText(suggestion)) || fuzzysearch(q, getValue(suggestion));
+{
+  id: 'here is some category',
+  list: [item1, item2, item3]
 }
 ```
 
-###### Example
+## `blankSearch`
 
-The example below would always display every suggestion, except when the user input looks like `'seahawks/managers'`, in which case it would only return suggestions matching the `'seahawks'` team.
+When this option is set to `true`, the `source(data, done)` function will be called even when the `input` string is empty.
 
-```js
-horsey(el, {
-  filter: function (q, suggestion) {
-    var parts = q.split('/');
-    return parts.length === 1 ? true : suggestion.team === parts[0];
-  }
-});
-```
+## `noMatches`
 
-### `limit`
+Defaults to `null`. Set to a string if you want to display an informational message when no suggestions match the provided `input` string. Note that this message won't be displayed when `input` is empty even if `blankSearch` is turned on.
 
-Allows you to limit the amount of search results that are displayed by `horsey`. Defaults to `Infinity`.
+## `debounce`
 
-### `getText`
+The minimum amount of milliseconds that should ellapse between two different calls to `source`. Useful to allow users to type text without firing dozens of queries. Defaults to `300`.
 
-A function that returns the textual representation to be displayed on the suggestion list. The result of `getText` is also used when filtering _under the default implementation_.
+## `highlighter`
 
-###### Default
+If set to `false`, autocomplete suggestions won't be highlighted based on user input.
 
-```js
-function defaultGetText (suggestion) {
-  return typeof suggestion === 'string' ? suggestion : suggestion.text;
-}
-```
+## `highlightCompleteWords`
 
-###### Example
+If set to `false`, autocomplete suggestions won't be highlighted as whole words first. The highlighter will be faster but the UX won't be as close to user expectations.
 
-The example below would return a model's `displayName` for convenience.
+## `renderItem`
 
-```js
-horsey(el, {
-  getText: function (suggestion) {
-    return suggestion.displayName;
-  }
-});
-```
+By default, items are rendered using the text for a `suggestion`. You can customize this behavior by setting `autocomplete.renderItem` to a function that receives `li, suggestion` parameters. The `li` is a DOM element and the `suggestion` is its data object.
 
-### `getValue`
+## `renderCategory`
 
-A function that returns the value to be given to the `el` when a suggestion is selected.
-
-###### Default
-
-```js
-function defaultGetValue (suggestion) {
-  return typeof suggestion === 'string' ? suggestion : suggestion.value;
-}
-```
-
-###### Example
-
-The example below would return a model's `username` for convenience.
-
-```js
-horsey(el, {
-  getValue: function (suggestion) {
-    return suggestion.username;
-  }
-});
-```
-
-### `set`
-
-A function that gets called when an option has been selected on the autocomplete.
-
-###### Default
-
-```js
-function defaultSetter (value) {
-  el.value = value;
-}
-```
-
-###### Example
-
-The example below would append values instead of overwriting them.
-
-```js
-horsey(el, {
-  set: function (value) {
-    el.value += value + ', ';
-  }
-});
-```
-
-### `anchor`
-
-A string that will be used as a regular expression to figure out _when_ the suggestions should be presented. If an `anchor` is set, the text will be appended instead of replaced, and **the `set` option will be ignored**.
-
-### `autoHideOnClick`
-
-Hides the autocomplete list whenever something other than the `el` or any child of the autocomplete's `<ul>` element is clicked. Defaults to `true`.
-
-### `autoHideOnBlur`
-
-Hides the autocomplete list whenever something other than the `el` or any child of the autocomplete's `<ul>` element is focused. Defaults to `true`.
-
-### `autoShowOnUpDown`
-
-Displays the autocomplete list whenever the up arrow key or the down arrow key are pressed. Defaults to `el.tagName === 'INPUT'`.
-
-### `render`
-
-A function that's used to decide what to display in each suggestion item. `render` will take the `<li>` element as the first argument, and the suggestion model as the second argument.
-
-###### Default
-
-```js
-function defaultRenderer (li, suggestion) {
-  li.innerText = li.textContent = getText(suggestion);
-}
-```
-
-###### Example
-
-The example below would assign arbitrary HTML found in the `suggestion` model to each list item. Note that rendering doesn't necessarily have to be synchronous.
-
-```js
-horsey(el, {
-  render: function (li, suggestion) {
-    li.innerHTML = suggestion.html;
-  }
-});
-```
-
-### `appendTo`
-
-Where should the `<ul>` element containing the autocomplete options be placed? Generally an irrelevant option, but useful if you're dealing with a SPA, where you want to _keep the element inside your view instead of the body_, so that it gets cleaned up as the view goes away.
-
-Defaults to `document.body`.
-
-### `form`
-
-The `form` your `el` belongs to. If provided, the autocomplete list will be hidden whenever the form is submitted.
+By default, categories are rendered using just their `data.title`. You can customize this behavior by setting `autocomplete.renderCategory` to a function that receives `div, data` parameters. The `div` is a DOM element and the `data` is the full category data object, including the `list` of suggestions. After you customize the `div`, the list of suggestions for the category will be appended to `div`.
 
 # API
 
 Once you've instantiated a `horsey`, you can do a few more things with it.
 
-### `.add(suggestion)`
-
-Just like when passing `suggestions` as an option, you can add individual suggestions by calling `.add(suggestion)`. Returns the `<li>` element for this suggestion in the autocomplete list. There isn't an API method to remove the suggestion afterwards, so you'll have to grab onto the `<li>` reference if you want to remove it later on.
-
-### `.clear()`
+## `.clear()`
 
 You can however, remove every single suggestion from the autocomplete, wiping the slate clean. Contrary to `.destroy()`, `.clear()` won't leave the `horsey` instance useless, and calling `.add` will turn it back online in no time.
 
-### `.list`
-
-The autocomplete list DOM `<ul>` element.
-
-### `.suggestions`
+## `.source`
 
 Exposes the suggestions that have been added so far to the autocomplete list. Includes suggestions that may not be shown due to filtering. This should be treated as a read-only list.
 
-### `.show()`
+## `.show()`
 
 Shows the autocomplete list.
 
-### `.hide()`
+## `.hide()`
 
 Hides the autocomplete list.
 
-### `.toggle()`
+## `.toggle()`
 
 Shows or hides the autocomplete list.
 
-### `.refreshPosition()`
+## `.refreshPosition()`
 
 Updates the position of the autocomplete list relative to the position of the `el`. Only necessary when the `el` is moved.
 
-### `.destroy()`
+## `.destroy()`
 
 Unbind horsey-related events from the `el`, remove the autocomplete list. It's like `horsey` was never here.
 
-### `.retarget(target)`
+## `.retarget(target)`
 
 Detaches this `horsey` instance from `el`, removing events and whatnot, and then attaches the instance to `target`. Note that `horsey.find` will still only work with `el`. This method is mostly for internal purposes, but it's also useful if you're developing a text editor with multiple modes (particularly if it switches between a `<textarea>` and a content-editable `<div>`).
 
-### `.anchor`
+## `.anchor`
 
 The anchor value that was originally passed into `horse` as `options.anchor`.
 
-### `.defaultRenderer`
+## `.defaultRenderer`
 
 The default `render` method
 
-### `.defaultGetText`
+## `.defaultGetText`
 
 The default `getText` method
 
-### `.defaultGetValue`
+## `.defaultGetValue`
 
 The default `getValue` method
 
-### `.defaultSetter`
+## `.defaultSetter`
 
 The default `set` method
 
-### `.defaultFilter`
+## `.defaultFilter`
 
 The default `filter` method
 
-### `.appendText`
+## `.appendText`
 
 Method called whenever we have an `anchor` and we need to append a suggestion to an input field. Defaults to `defaultAppendText`.
 
-### `.appendHTML`
+## `.appendHTML`
 
 Method called whenever we have an `anchor` and we need to append a suggestion for a `contentEditable` element. **Unsupported by default**. Provided by [banksy][8].
 
-### `.defaultAppendText`
+## `.defaultAppendText`
 
 Default `appendText` implementation
 
-### `.filterAnchoredText`
+## `.filterAnchoredText`
 
 Method called whenever we have an `anchor` and we need to filter a suggestion for an input field.
 
-### `.filterAnchoredHTML`
+## `.filterAnchoredHTML`
 
 Method called whenever we have an `anchor` and we need to filter a suggestion for a `contentEditable` element. **Unsupported by default**. Provided by [banksy][8].
 
@@ -318,12 +202,11 @@ Once you've instantiated a `horsey`, some propietary synthetic events will be em
 
 Name              | Description
 ------------------|---------------------------------------------------------------
-`horsey-selected` | Fired after a suggestion is selected from the autocomplete
 `horsey-show`     | Fired whenever the autocomplete list is displayed
 `horsey-hide`     | Fired whenever the autocomplete list is hidden
 `horsey-filter`   | Fired whenever the autocomplete list is about to be filtered. Useful to prime the filter method
 
-### Usage with [woofmark][7]
+## Usage with [woofmark][7]
 
 See [banksy][8] to integrate `horsey` into [woofmark][7].
 
