@@ -47,6 +47,8 @@ function horsey (el, options = {}) {
     getValue,
     setAppends,
     predictNextSearch,
+    renderItem,
+    renderCategory,
     appendTo,
     noMatches,
     noMatchesText: options.noMatches,
@@ -116,10 +118,6 @@ function autocomplete (el, options = {}) {
   const o = options;
   const parent = o.appendTo || doc.body;
   const {
-    renderItem = defaultItemRenderer,
-    renderCategory = defaultCategoryRenderer
-  } = { o };
-  const {
     getText,
     getValue,
     form,
@@ -128,6 +126,8 @@ function autocomplete (el, options = {}) {
     noMatchesText,
     highlighter = true,
     highlightCompleteWords = true,
+    renderItem = defaultItemRenderer,
+    renderCategory = defaultCategoryRenderer,
     setAppends
   } = o;
   const limit = typeof o.limit === 'number' ? o.limit : Infinity;
