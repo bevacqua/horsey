@@ -1,12 +1,12 @@
 {
   "name": "horsey",
-  "version": "4.0.1",
+  "version": "4.2.0",
   "description": "Progressive and customizable autocomplete component",
   "main": "horsey.es5.js",
   "scripts": {
     "build": "npm run scripts && npm run styles",
     "deploy": "npm run build && npm run deployment && npm run sync",
-    "deployment": "git add dist && npm version ${BUMP:-\"patch\"} && git add package.json && git commit -am \"Release $(cat package.json | jq -r .version)\" && git push --tags && npm publish && git push",
+    "deployment": "git add dist && git add horsey.es5.js && npm version ${BUMP:-\"patch\"} && git add package.json && git commit -am \"Release $(cat package.json | jq -r .version)\" && git push --tags && npm publish && git push",
     "scripts": "jshint . && babel --presets es2015 --out-file horsey.es5.js horsey.js && browserify -s horsey -t [ babelify --presets [ es2015 ] ] -do dist/horsey.js horsey.js && uglifyjs -m -c -o dist/horsey.min.js dist/horsey.js",
     "start": "watchify -vs horsey -t [ babelify --presets [ es2015 ] ] -do dist/horsey.js horsey.js & stylus -w horsey.styl -o dist",
     "styles": "stylus horsey.styl -o dist && cleancss dist/horsey.css -o dist/horsey.min.css",
