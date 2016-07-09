@@ -76,6 +76,8 @@ function horsey(el) {
     getValue: getValue,
     setAppends: setAppends,
     predictNextSearch: predictNextSearch,
+    renderItem: renderItem,
+    renderCategory: renderCategory,
     appendTo: appendTo,
     noMatches: noMatches,
     noMatchesText: options.noMatches,
@@ -149,11 +151,6 @@ function autocomplete(el) {
 
   var o = options;
   var parent = o.appendTo || doc.body;
-  var _o = { o: o };
-  var _o$renderItem = _o.renderItem;
-  var renderItem = _o$renderItem === undefined ? defaultItemRenderer : _o$renderItem;
-  var _o$renderCategory = _o.renderCategory;
-  var renderCategory = _o$renderCategory === undefined ? defaultCategoryRenderer : _o$renderCategory;
   var getText = o.getText;
   var getValue = o.getValue;
   var form = o.form;
@@ -164,6 +161,10 @@ function autocomplete(el) {
   var highlighter = _o$highlighter === undefined ? true : _o$highlighter;
   var _o$highlightCompleteW = o.highlightCompleteWords;
   var highlightCompleteWords = _o$highlightCompleteW === undefined ? true : _o$highlightCompleteW;
+  var _o$renderItem = o.renderItem;
+  var renderItem = _o$renderItem === undefined ? defaultItemRenderer : _o$renderItem;
+  var _o$renderCategory = o.renderCategory;
+  var renderCategory = _o$renderCategory === undefined ? defaultCategoryRenderer : _o$renderCategory;
   var setAppends = o.setAppends;
 
   var limit = typeof o.limit === 'number' ? o.limit : Infinity;
