@@ -21,8 +21,6 @@ function horsey (el, options = {}) {
   const {
     setAppends,
     set,
-    getText,
-    getValue,
     filter,
     source,
     cache = {},
@@ -31,12 +29,27 @@ function horsey (el, options = {}) {
     renderCategory,
     blankSearch,
     appendTo,
+    anchor,
     debounce
   } = options;
   const caching = options.cache !== false;
   if (!source) {
     return;
   }
+
+  const userGetText = options.getText;
+  const userGetValue = options.getValue;
+  const getText = (
+    typeof userGetText === 'string' ? d => d[userGetText] :
+    typeof userGetText === 'function' ? userGetText :
+    d => d.toString()
+  );
+  const getValue = (
+    typeof userGetValue === 'string' ? d => d[userGetValue] :
+    typeof userGetValue === 'function' ? userGetValue :
+    d => d
+  );
+
   let previousSuggestions = [];
   let previousSelection = null;
   const limit = Number(options.limit) || Infinity;
@@ -50,6 +63,7 @@ function horsey (el, options = {}) {
     renderItem,
     renderCategory,
     appendTo,
+    anchor,
     noMatches,
     noMatchesText: options.noMatches,
     blankSearch,
@@ -76,7 +90,9 @@ function horsey (el, options = {}) {
     if (!options.blankSearch && query.length === 0) {
       done(null, [], true); return;
     }
-    completer.emit('beforeUpdate');
+    if (completer) {
+      completer.emit('beforeUpdate');
+    }
     const hash = sum(query); // fast, case insensitive, prevents collisions
     if (caching) {
       const entry = cache[hash];
@@ -98,7 +114,11 @@ function horsey (el, options = {}) {
       renderCategory,
       limit
     };
-    options.source(sourceData, sourced);
+    if (typeof options.source === 'function') {
+      options.source(sourceData, sourced);
+    } else {
+      sourced(null, options.source);
+    }
     function sourced (err, result) {
       if (err) {
         console.log('Autocomplete source error.', err, el);
@@ -440,7 +460,7 @@ function autocomplete (el, options = {}) {
 
   function set (value) {
     if (o.anchor) {
-      return (isText() ? api.appendText : api.appendHTML)(value);
+      return (isText() ? api.appendText : api.appendHTML)(getValue(value));
     }
     userSet(value);
   }

@@ -14,7 +14,7 @@
     <pre>
       <code>
 horsey(document.querySelector('input'), {
-  suggestions: ['banana', 'apple', 'orange']
+  source: [{ list: ['banana', 'apple', 'orange'] }]
 });
       </code>
     </pre>
@@ -27,13 +27,11 @@ horsey(document.querySelector('input'), {
     <pre>
       <code>
 horsey(document.querySelector('input'), {
-  suggestions: function (value, done) {
+  source (data, done) {
     var items = [ 'banana', 'apple', 'orange' ];
-    setTimeout(function () {
-      done(items.filter(function(item) {
-        return item.indexOf(value) !== -1;
-      }));
-    }, 2000);
+    setTimeout(() => done(null, [{
+      list: items.filter(item => item.indexOf(data.input) !== -1)
+    }]), 2000);
   }
 });
       </code>
@@ -45,12 +43,14 @@ horsey(document.querySelector('input'), {
     <pre>
       <code>
 horsey(document.querySelector('input'), {
-  suggestions: [
+  source: [{ list: [
     { value: 'banana', text: 'Bananas from Amazon Rainforest' },
     { value: 'apple', text: 'Red apples from New Zealand' },
     { value: 'orange', text: 'Oranges from Moscow' },
-    { value: 'lemon', text: 'Juicy lemons from Amalfitan Coast' }
-  ]
+    { value: 'lemon', text: 'Juicy lemons from the rich Amalfitan Coast' }
+  ]}],
+  getText: 'text',
+  getValue: 'value'
 });
       </code>
     </pre>
@@ -61,13 +61,15 @@ horsey(document.querySelector('input'), {
     <pre>
       <code>
 horsey(document.querySelector('input'), {
-  suggestions: [
+  source: [{ list: [
     { value: 'banana', text: 'Bananas from Amazon Rainforest' },
     { value: 'apple', text: 'Red apples from New Zealand' },
     { value: 'orange', text: 'Oranges from Moscow' },
     { value: 'lemon', text: 'Juicy lemons from Amalfitan Coast' }
-  ],
-  render: function (li, suggestion) {
+  ]}],
+  getText: 'text',
+  getValue: 'value',
+  renderItem: function (li, suggestion) {
     var image = '&lt;img class="autofruit" src="example/fruits/' + suggestion.value + '.png" /&gt; ';
     li.innerHTML = image + suggestion.text;
   }
@@ -81,7 +83,7 @@ horsey(document.querySelector('input'), {
     <pre>
       <code>
 horsey(document.querySelector('input'), {
-  suggestions: [
+  source: [{ list: [
     { value: 'banana', text: 'Bananas from Amazon Rainforest' },
     { value: 'banana-boat', text: 'Banana Boat' },
     { value: 'apple', text: 'Red apples from New Zealand' },
@@ -89,7 +91,9 @@ horsey(document.querySelector('input'), {
     { value: 'orange', text: 'Oranges from Moscow' },
     { value: 'orange-vodka', text: 'Classic orange vodka cocktail' },
     { value: 'lemon', text: 'Juicy lemons from Amalfitan Coast' }
-  ],
+  ]}],
+  getText: 'text',
+  getValue: 'value',
   limit: 2
 });
       </code>
@@ -101,11 +105,13 @@ horsey(document.querySelector('input'), {
     <pre>
       <code>
 horsey(document.querySelector('textarea'), {
-  suggestions: [
+  source: [{ list: [
     { value: '@michael', text: 'Michael Jackson' },
     { value: '@jack', text: 'Jack Johnson' },
     { value: '@ozzy', text: 'Ozzy Osbourne' }
-  ],
+  ]}],
+  getText: 'text',
+  getValue: 'value',
   anchor: '@'
 });
       </code>
@@ -117,7 +123,7 @@ horsey(document.querySelector('textarea'), {
     <pre>
       <code>
 horsey(document.querySelector('div'), {
-  suggestions: [
+  source: [{ list: [
     { value: 'banana', text: 'Bananas from Amazon Rainforest' },
     { value: 'banana-boat', text: 'Banana Boat' },
     { value: 'apple', text: 'Red apples from New Zealand' },
@@ -125,7 +131,9 @@ horsey(document.querySelector('div'), {
     { value: 'orange', text: 'Oranges from Moscow' },
     { value: 'orange-vodka', text: 'Classic orange vodka cocktail' },
     { value: 'lemon', text: 'Juicy lemons from Amalfitan Coast' }
-  ]
+  ]}],
+  getText: 'text',
+  getValue: 'value'
 });
       </code>
     </pre>

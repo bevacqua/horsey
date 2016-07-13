@@ -49,8 +49,6 @@ function horsey(el) {
   var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
   var setAppends = options.setAppends;
   var _set = options.set;
-  var getText = options.getText;
-  var getValue = options.getValue;
   var filter = options.filter;
   var source = options.source;
   var _options$cache = options.cache;
@@ -60,12 +58,27 @@ function horsey(el) {
   var renderCategory = options.renderCategory;
   var blankSearch = options.blankSearch;
   var appendTo = options.appendTo;
+  var anchor = options.anchor;
   var debounce = options.debounce;
 
   var caching = options.cache !== false;
   if (!source) {
     return;
   }
+
+  var userGetText = options.getText;
+  var userGetValue = options.getValue;
+  var getText = typeof userGetText === 'string' ? function (d) {
+    return d[userGetText];
+  } : typeof userGetText === 'function' ? userGetText : function (d) {
+    return d.toString();
+  };
+  var getValue = typeof userGetValue === 'string' ? function (d) {
+    return d[userGetValue];
+  } : typeof userGetValue === 'function' ? userGetValue : function (d) {
+    return d;
+  };
+
   var previousSuggestions = [];
   var previousSelection = null;
   var limit = Number(options.limit) || Infinity;
@@ -79,6 +92,7 @@ function horsey(el) {
     renderItem: renderItem,
     renderCategory: renderCategory,
     appendTo: appendTo,
+    anchor: anchor,
     noMatches: noMatches,
     noMatchesText: options.noMatches,
     blankSearch: blankSearch,
@@ -108,7 +122,9 @@ function horsey(el) {
     if (!options.blankSearch && query.length === 0) {
       done(null, [], true);return;
     }
-    completer.emit('beforeUpdate');
+    if (completer) {
+      completer.emit('beforeUpdate');
+    }
     var hash = (0, _hashSum2.default)(query); // fast, case insensitive, prevents collisions
     if (caching) {
       var entry = cache[hash];
@@ -130,7 +146,11 @@ function horsey(el) {
       renderCategory: renderCategory,
       limit: limit
     };
-    options.source(sourceData, sourced);
+    if (typeof options.source === 'function') {
+      options.source(sourceData, sourced);
+    } else {
+      sourced(null, options.source);
+    }
     function sourced(err, result) {
       if (err) {
         console.log('Autocomplete source error.', err, el);
@@ -601,7 +621,7 @@ function autocomplete(el) {
 
   function set(value) {
     if (o.anchor) {
-      return (isText() ? api.appendText : api.appendHTML)(value);
+      return (isText() ? api.appendText : api.appendHTML)(getValue(value));
     }
     userSet(value);
   }
