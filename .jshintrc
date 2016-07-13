@@ -7,7 +7,7 @@
   "nonew": true,
   "sub": true,
   "undef": true,
-  "unused": true,
+  "unused": false,
   "trailing": true,
   "boss": true,
   "eqnull": true,
@@ -19,5 +19,6 @@
   "validthis": true,
   "indent": 2,
   "node": true,
-  "browser": true
+  "browser": true,
+  "esnext": true
 }

@@ -1,57 +1,174 @@
 'use strict';
 
-var sell = require('sell');
-var crossvent = require('crossvent');
-var bullseye = require('bullseye');
-var fuzzysearch = require('fuzzysearch');
-var KEY_BACKSPACE = 8;
-var KEY_ENTER = 13;
-var KEY_ESC = 27;
-var KEY_UP = 38;
-var KEY_DOWN = 40;
-var KEY_TAB = 9;
-var cache = [];
-var doc = document;
-var docElement = doc.documentElement;
+import sum from 'hash-sum';
+import sell from 'sell';
+import sektor from 'sektor';
+import emitter from 'contra/emitter';
+import bullseye from 'bullseye';
+import crossvent from 'crossvent';
+import fuzzysearch from 'fuzzysearch';
+import debounce from 'lodash/debounce';
+const KEY_BACKSPACE = 8;
+const KEY_ENTER = 13;
+const KEY_ESC = 27;
+const KEY_UP = 38;
+const KEY_DOWN = 40;
+const KEY_TAB = 9;
+const doc = document;
+const docElement = doc.documentElement;
 
-function find (el) {
-  var entry;
-  var i;
-  for (i = 0; i < cache.length; i++) {
-    entry = cache[i];
-    if (entry.el === el) {
-      return entry.api;
+function horsey (el, options = {}) {
+  const {
+    setAppends,
+    set,
+    filter,
+    source,
+    cache = {},
+    predictNextSearch,
+    renderItem,
+    renderCategory,
+    blankSearch,
+    appendTo,
+    anchor,
+    debounce
+  } = options;
+  const caching = options.cache !== false;
+  if (!source) {
+    return;
+  }
+
+  const userGetText = options.getText;
+  const userGetValue = options.getValue;
+  const getText = (
+    typeof userGetText === 'string' ? d => d[userGetText] :
+    typeof userGetText === 'function' ? userGetText :
+    d => d.toString()
+  );
+  const getValue = (
+    typeof userGetValue === 'string' ? d => d[userGetValue] :
+    typeof userGetValue === 'function' ? userGetValue :
+    d => d
+  );
+
+  let previousSuggestions = [];
+  let previousSelection = null;
+  const limit = Number(options.limit) || Infinity;
+  const completer = autocomplete(el, {
+    source: sourceFunction,
+    limit,
+    getText,
+    getValue,
+    setAppends,
+    predictNextSearch,
+    renderItem,
+    renderCategory,
+    appendTo,
+    anchor,
+    noMatches,
+    noMatchesText: options.noMatches,
+    blankSearch,
+    debounce,
+    set (s) {
+      if (setAppends !== true) {
+        el.value = '';
+      }
+      previousSelection = s;
+      (set || completer.defaultSetter)(getText(s), s);
+      completer.emit('afterSet');
+    },
+    filter
+  });
+  return completer;
+  function noMatches (data) {
+    if (!options.noMatches) {
+      return false;
+    }
+    return data.query.length;
+  }
+  function sourceFunction (data, done) {
+    const {query, limit} = data;
+    if (!options.blankSearch && query.length === 0) {
+      done(null, [], true); return;
+    }
+    if (completer) {
+      completer.emit('beforeUpdate');
+    }
+    const hash = sum(query); // fast, case insensitive, prevents collisions
+    if (caching) {
+      const entry = cache[hash];
+      if (entry) {
+        const start = entry.created.getTime();
+        const duration = cache.duration || 60 * 60 * 24;
+        const diff = duration * 1000;
+        const fresh = new Date(start + diff) > new Date();
+        if (fresh) {
+          done(null, entry.items.slice()); return;
+        }
+      }
+    }
+    var sourceData = {
+      previousSuggestions: previousSuggestions.slice(),
+      previousSelection,
+      input: query,
+      renderItem,
+      renderCategory,
+      limit
+    };
+    if (typeof options.source === 'function') {
+      options.source(sourceData, sourced);
+    } else {
+      sourced(null, options.source);
+    }
+    function sourced (err, result) {
+      if (err) {
+        console.log('Autocomplete source error.', err, el);
+        done(err, []);
+      }
+      const items = Array.isArray(result) ? result : [];
+      if (caching) {
+        cache[hash] = { created: new Date(), items };
+      }
+      previousSuggestions = items;
+      done(null, items.slice());
     }
   }
-  return null;
 }
 
-function horsey (el, options) {
-  var cached = find(el);
-  if (cached) {
-    return cached;
-  }
-
-  var o = options || {};
-  var parent = o.appendTo || doc.body;
-  var render = o.render || defaultRenderer;
-  var getText = o.getText || defaultGetText;
-  var getValue = o.getValue || defaultGetValue;
-  var form = o.form;
-  var limit = typeof o.limit === 'number' ? o.limit : Infinity;
-  var suggestions = o.suggestions;
-  var userFilter = o.filter || defaultFilter;
-  var userSet = o.set || defaultSetter;
-  var ul = tag('ul', 'sey-list');
-  var selection = null;
-  var eye;
-  var deferredFiltering = defer(filtering);
-  var attachment = el;
-  var textInput;
-  var anyInput;
-  var ranchorleft;
-  var ranchorright;
-  var suggestionsLoad = { counter: 0, value: null };
+function autocomplete (el, options = {}) {
+  const o = options;
+  const parent = o.appendTo || doc.body;
+  const {
+    getText,
+    getValue,
+    form,
+    source,
+    noMatches,
+    noMatchesText,
+    highlighter = true,
+    highlightCompleteWords = true,
+    renderItem = defaultItemRenderer,
+    renderCategory = defaultCategoryRenderer,
+    setAppends
+  } = o;
+  const limit = typeof o.limit === 'number' ? o.limit : Infinity;
+  const userFilter = o.filter || defaultFilter;
+  const userSet = o.set || defaultSetter;
+  const categories = tag('div', 'sey-categories');
+  const container = tag('div', 'sey-container');
+  const deferredFiltering = defer(filtering);
+  const state = { counter: 0, query: null };
+  let categoryMap = Object.create(null);
+  let selection = null;
+  let eye;
+  let attachment = el;
+  let noneMatch;
+  let textInput;
+  let anyInput;
+  let ranchorleft;
+  let ranchorright;
+  let lastPrefix = '';
+  const debounceTime = o.debounce || 300;
+  const debouncedLoading = debounce(loading, debounceTime);
 
   if (o.autoHideOnBlur === void 0) { o.autoHideOnBlur = true; }
   if (o.autoHideOnClick === void 0) { o.autoHideOnClick = true; }
@@ -61,39 +178,41 @@ function horsey (el, options) {
     ranchorright = new RegExp(o.anchor + '$');
   }
 
-  var api = {
-    add: add,
+  let hasItems = false;
+  const api = emitter({
     anchor: o.anchor,
-    clear: clear,
-    show: show,
-    hide: hide,
-    toggle: toggle,
-    destroy: destroy,
-    refreshPosition: refreshPosition,
-    appendText: appendText,
-    appendHTML: appendHTML,
-    filterAnchoredText: filterAnchoredText,
-    filterAnchoredHTML: filterAnchoredHTML,
+    clear,
+    show,
+    hide,
+    toggle,
+    destroy,
+    refreshPosition,
+    appendText,
+    appendHTML,
+    filterAnchoredText,
+    filterAnchoredHTML,
     defaultAppendText: appendText,
-    defaultFilter: defaultFilter,
-    defaultGetText: defaultGetText,
-    defaultGetValue: defaultGetValue,
-    defaultRenderer: defaultRenderer,
-    defaultSetter: defaultSetter,
-    retarget: retarget,
-    attachment: attachment,
-    list: ul,
-    suggestions: []
-  };
-  var entry = { el: el, api: api };
+    defaultFilter,
+    defaultItemRenderer,
+    defaultCategoryRenderer,
+    defaultSetter,
+    retarget,
+    attachment,
+    source: []
+  });
 
   retarget(el);
-  cache.push(entry);
-  parent.appendChild(ul);
+  container.appendChild(categories);
+  if (noMatches && noMatchesText) {
+    noneMatch = tag('div', 'sey-empty sey-hide');
+    text(noneMatch, noMatchesText);
+    container.appendChild(noneMatch);
+  }
+  parent.appendChild(container);
   el.setAttribute('autocomplete', 'off');
 
-  if (Array.isArray(suggestions)) {
-    loaded(suggestions, false);
+  if (Array.isArray(source)) {
+    loaded(source, false);
   }
 
   return api;
@@ -111,27 +230,37 @@ function horsey (el, options) {
   }
 
   function loading (forceShow) {
-    if (typeof suggestions === 'function') {
-      crossvent.remove(attachment, 'focus', loading);
-      var value = textInput ? el.value : el.innerHTML;
-      if (value !== suggestionsLoad.value) {
-        suggestionsLoad.counter++;
-        suggestionsLoad.value = value;
+    if (typeof source !== 'function') {
+      return;
+    }
+    crossvent.remove(attachment, 'focus', loading);
+    const query = readInput();
+    if (query === state.query) {
+      return;
+    }
+    hasItems = false;
+    state.query = query;
 
-        var counter = suggestionsLoad.counter;
-        suggestions(value, function(s) {
-          if (suggestionsLoad.counter === counter) {
-            loaded(s, forceShow);
-          }
-        });
+    const counter = ++state.counter;
+
+    source({ query, limit }, sourced);
+
+    function sourced (err, result, blankQuery) {
+      if (state.counter !== counter) {
+        return;
+      }
+      loaded(result, forceShow);
+      if (err || blankQuery) {
+        hasItems = false;
       }
     }
   }
 
-  function loaded (suggestions, forceShow) {
+  function loaded (categories, forceShow) {
     clear();
-    suggestions.forEach(add);
-    api.suggestions = suggestions;
+    hasItems = true;
+    api.source = [];
+    categories.forEach(cat => cat.list.forEach(suggestion => add(suggestion, cat)));
     if (forceShow) {
       show();
     }
@@ -140,31 +269,74 @@ function horsey (el, options) {
 
   function clear () {
     unselect();
-    while (ul.lastChild) {
-      ul.removeChild(ul.lastChild);
+    while (categories.lastChild) {
+      categories.removeChild(categories.lastChild);
+    }
+    categoryMap = Object.create(null);
+    hasItems = false;
+  }
+
+  function readInput () {
+    return (textInput ? el.value : el.innerHTML).trim();
+  }
+
+  function getCategory (data) {
+    if (!data.id) {
+      data.id = 'default';
+    }
+    if (!categoryMap[data.id]) {
+      categoryMap[data.id] = createCategory();
+    }
+    return categoryMap[data.id];
+    function createCategory () {
+      const category = tag('div', 'sey-category');
+      const ul = tag('ul', 'sey-list');
+      renderCategory(category, data);
+      category.appendChild(ul);
+      categories.appendChild(category);
+      return { data, ul };
     }
   }
 
-  function add (suggestion) {
-    var li = tag('li', 'sey-item');
-    render(li, suggestion);
+  function add (suggestion, categoryData) {
+    const cat = getCategory(categoryData);
+    const li = tag('li', 'sey-item');
+    renderItem(li, suggestion);
+    if (highlighter) {
+      breakupForHighlighter(li);
+    }
+    crossvent.add(li, 'mouseenter', hoverSuggestion);
     crossvent.add(li, 'click', clickedSuggestion);
     crossvent.add(li, 'horsey-filter', filterItem);
     crossvent.add(li, 'horsey-hide', hideItem);
-    ul.appendChild(li);
-    api.suggestions.push(suggestion);
+    cat.ul.appendChild(li);
+    api.source.push(suggestion);
     return li;
 
+    function hoverSuggestion () {
+      select(li);
+    }
+
     function clickedSuggestion () {
-      var value = getValue(suggestion);
-      set(value);
+      const input = getText(suggestion);
+      set(suggestion);
       hide();
       attachment.focus();
-      crossvent.fabricate(attachment, 'horsey-selected', value);
+      lastPrefix = o.predictNextSearch && o.predictNextSearch({
+        input: input,
+        source: api.source.slice(),
+        selection: suggestion
+      }) || '';
+      if (lastPrefix) {
+        el.value = lastPrefix;
+        el.select();
+        show();
+        filtering();
+      }
     }
 
     function filterItem () {
-      var value = textInput ? el.value : el.innerHTML;
+      const value = readInput();
       if (filter(value, suggestion)) {
         li.className = li.className.replace(/ sey-hide/g, '');
       } else {
@@ -182,35 +354,139 @@ function horsey (el, options) {
     }
   }
 
+  function breakupForHighlighter (el) {
+    getTextChildren(el).forEach(el => {
+      const parent = el.parentElement;
+      const text = el.textContent || el.nodeValue || '';
+      if (text.length === 0) {
+        return;
+      }
+      for (let char of text) {
+        parent.insertBefore(spanFor(char), el);
+      }
+      parent.removeChild(el);
+      function spanFor (char) {
+        const span = doc.createElement('span');
+        span.className = 'sey-char';
+        span.textContent = span.innerText = char;
+        return span;
+      }
+    });
+  }
+
+  function highlight (el, needle) {
+    const rword = /[\s,._\[\]{}()-]/g;
+    const words = needle.split(rword).filter(w => w.length);
+    const elems = [...el.querySelectorAll('.sey-char')];
+    let chars;
+    let startIndex = 0;
+
+    balance();
+    if (highlightCompleteWords) {
+      whole();
+    }
+    fuzzy();
+    clearRemainder();
+
+    function balance () {
+      chars = elems.map(el => el.innerText || el.textContent);
+    }
+
+    function whole () {
+      for (let word of words) {
+        let tempIndex = startIndex;
+        retry: while (tempIndex !== -1) {
+          let init = true;
+          let prevIndex = tempIndex;
+          for (let char of word) {
+            const i = chars.indexOf(char, prevIndex + 1);
+            const fail = i === -1 || (!init && prevIndex + 1 !== i);
+            if (init) {
+              init = false;
+              tempIndex = i;
+            }
+            if (fail) {
+              continue retry;
+            }
+            prevIndex = i;
+          }
+          for (let el of elems.splice(tempIndex, 1 + prevIndex - tempIndex)) {
+            on(el);
+          }
+          balance();
+          needle = needle.replace(word, '');
+          break;
+        }
+      }
+    }
+
+    function fuzzy () {
+      for (let input of needle) {
+        while (elems.length) {
+          let el = elems.shift();
+          if ((el.innerText || el.textContent) === input) {
+            on(el);
+            break;
+          } else {
+            off(el);
+          }
+        }
+      }
+    }
+
+    function clearRemainder () {
+      while (elems.length) {
+        off(elems.shift());
+      }
+    }
+
+    function on (ch) {
+      ch.classList.add('sey-char-highlight');
+    }
+    function off (ch) {
+      ch.classList.remove('sey-char-highlight');
+    }
+  }
+
+  function getTextChildren (el) {
+    const texts = [];
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
+    let node;
+    while (node = walker.nextNode()) {
+      texts.push(node);
+    }
+    return texts;
+  }
+
   function set (value) {
     if (o.anchor) {
-      return (isText() ? api.appendText : api.appendHTML)(value);
+      return (isText() ? api.appendText : api.appendHTML)(getValue(value));
     }
     userSet(value);
   }
 
   function filter (value, suggestion) {
     if (o.anchor) {
-      var il = (isText() ? api.filterAnchoredText : api.filterAnchoredHTML)(value, suggestion);
+      const il = (isText() ? api.filterAnchoredText : api.filterAnchoredHTML)(value, suggestion);
       return il ? userFilter(il.input, il.suggestion) : false;
     }
     return userFilter(value, suggestion);
   }
 
   function isText () { return isInput(attachment); }
-  function visible () { return ul.className.indexOf('sey-show') !== -1; }
+  function visible () { return container.className.indexOf('sey-show') !== -1; }
   function hidden (li) { return li.className.indexOf('sey-hide') !== -1; }
 
   function show () {
+    eye.refresh();
     if (!visible()) {
-      ul.className += ' sey-show';
-      eye.refresh();
+      container.className += ' sey-show';
       crossvent.fabricate(attachment, 'horsey-show');
     }
   }
 
   function toggler (e) {
-    var left = e.which === 1 && !e.metaKey && !e.ctrlKey;
+    const left = e.which === 1 && !e.metaKey && !e.ctrlKey;
     if (left === false) {
       return; // we only care about honest to god left-clicks
     }
@@ -225,10 +501,10 @@ function horsey (el, options) {
     }
   }
 
-  function select (suggestion) {
+  function select (li) {
     unselect();
-    if (suggestion) {
-      selection = suggestion;
+    if (li) {
+      selection = li;
       selection.className += ' sey-selected';
     }
   }
@@ -241,35 +517,62 @@ function horsey (el, options) {
   }
 
   function move (up, moves) {
-    var total = ul.children.length;
-    if (total < moves) {
-      unselect();
-      return;
-    }
+    const total = api.source.length;
     if (total === 0) {
       return;
     }
-    var first = up ? 'lastChild' : 'firstChild';
-    var next = up ? 'previousSibling' : 'nextSibling';
-    var suggestion = selection && selection[next] || ul[first];
+    if (moves > total) {
+      unselect();
+      return;
+    }
+    const cat = findCategory(selection) || categories.firstChild;
+    const first = up ? 'lastChild' : 'firstChild';
+    const last = up ? 'firstChild' : 'lastChild';
+    const next = up ? 'previousSibling' : 'nextSibling';
+    const prev = up ? 'nextSibling' : 'previousSibling';
+    const li = findNext();
+    select(li);
 
-    select(suggestion);
-
-    if (hidden(suggestion)) {
+    if (hidden(li)) {
       move(up, moves ? moves + 1 : 1);
+    }
+
+    function findCategory (el) {
+      while (el) {
+        if (sektor.matchesSelector(el.parentElement, '.sey-category')) {
+          return el.parentElement;
+        }
+        el = el.parentElement;
+      }
+      return null;
+    }
+
+    function findNext () {
+      if (selection) {
+        if (selection[next]) {
+          return selection[next];
+        }
+        if (cat[next] && findList(cat[next])[first]) {
+          return findList(cat[next])[first];
+        }
+      }
+      return findList(categories[first])[first];
     }
   }
 
   function hide () {
     eye.sleep();
-    ul.className = ul.className.replace(/ sey-show/g, '');
+    container.className = container.className.replace(/ sey-show/g, '');
     unselect();
     crossvent.fabricate(attachment, 'horsey-hide');
+    if (el.value === lastPrefix) {
+      el.value = '';
+    }
   }
 
   function keydown (e) {
-    var shown = visible();
-    var which = e.which || e.keyCode;
+    const shown = visible();
+    const which = e.which || e.keyCode;
     if (which === KEY_DOWN) {
       if (anyInput && o.autoShowOnUpDown) {
         show();
@@ -310,36 +613,80 @@ function horsey (el, options) {
     e.preventDefault();
   }
 
+  function showNoResults () {
+    if (noneMatch) {
+      noneMatch.classList.remove('sey-hide');
+    }
+  }
+
+  function hideNoResults () {
+    if (noneMatch) {
+      noneMatch.classList.add('sey-hide');
+    }
+  }
+
   function filtering () {
     if (!visible()) {
       return;
     }
-    loading(true);
+    debouncedLoading(true);
     crossvent.fabricate(attachment, 'horsey-filter');
-    var li = ul.firstChild;
-    var count = 0;
-    while (li) {
-      if (count >= limit) {
-        crossvent.fabricate(li, 'horsey-hide');
-      }
-      if (count < limit) {
-        crossvent.fabricate(li, 'horsey-filter');
-        if (li.className.indexOf('sey-hide') === -1) {
-          count++;
-        }
-      }
-      li = li.nextSibling;
+    const value = readInput();
+    if (!o.blankSearch && !value) {
+      hide(); return;
+    }
+    const nomatch = noMatches({ query: value });
+    let count = walkCategories();
+    if (count === 0 && nomatch && hasItems) {
+      showNoResults();
+    } else {
+      hideNoResults();
     }
     if (!selection) {
       move();
     }
-    if (!selection) {
+    if (!selection && !nomatch) {
       hide();
+    }
+    function walkCategories () {
+      let category = categories.firstChild;
+      let count = 0;
+      while (category) {
+        const list = findList(category);
+        const partial = walkCategory(list);
+        if (partial === 0) {
+          category.classList.add('sey-hide');
+        } else {
+          category.classList.remove('sey-hide');
+        }
+        count += partial;
+        category = category.nextSibling;
+      }
+      return count;
+    }
+    function walkCategory (ul) {
+      let li = ul.firstChild;
+      let count = 0;
+      while (li) {
+        if (count >= limit) {
+          crossvent.fabricate(li, 'horsey-hide');
+        } else {
+          crossvent.fabricate(li, 'horsey-filter');
+          if (li.className.indexOf('sey-hide') === -1) {
+            count++;
+            if (highlighter) {
+              highlight(li, value);
+            }
+          }
+        }
+        li = li.nextSibling;
+      }
+      return count;
     }
   }
 
   function deferredFilteringNoEnter (e) {
-    var which = e.which || e.keyCode;
+    const which = e.which || e.keyCode;
     if (which === KEY_ENTER) {
       return;
     }
@@ -347,20 +694,20 @@ function horsey (el, options) {
   }
 
   function deferredShow (e) {
-    var which = e.which || e.keyCode;
-    if (which === KEY_ENTER) {
+    const which = e.which || e.keyCode;
+    if (which === KEY_ENTER || which === KEY_TAB) {
       return;
     }
     setTimeout(show, 0);
   }
 
-  function horseyEventTarget (e) {
-    var target = e.target;
+  function autocompleteEventTarget (e) {
+    let target = e.target;
     if (target === attachment) {
       return true;
     }
     while (target) {
-      if (target === ul || target === attachment) {
+      if (target === container || target === attachment) {
         return true;
       }
       target = target.parentNode;
@@ -368,27 +715,30 @@ function horsey (el, options) {
   }
 
   function hideOnBlur (e) {
-    var which = e.which || e.keyCode;
+    const which = e.which || e.keyCode;
     if (which === KEY_TAB) {
       hide();
     }
   }
 
   function hideOnClick (e) {
-    if (horseyEventTarget(e)) {
+    if (autocompleteEventTarget(e)) {
       return;
     }
     hide();
   }
 
   function inputEvents (remove) {
-    var op = remove ? 'remove' : 'add';
+    const op = remove ? 'remove' : 'add';
     if (eye) {
       eye.destroy();
       eye = null;
     }
     if (!remove) {
-      eye = bullseye(ul, attachment, { caret: anyInput && attachment.tagName !== 'INPUT' });
+      eye = bullseye(container, attachment, {
+        caret: anyInput && attachment.tagName !== 'INPUT',
+        context: o.appendTo
+      });
       if (!visible()) { eye.sleep(); }
     }
     if (remove || (anyInput && doc.activeElement !== attachment)) {
@@ -413,33 +763,54 @@ function horsey (el, options) {
 
   function destroy () {
     inputEvents(true);
-    if (parent.contains(ul)) { parent.removeChild(ul); }
-    cache.splice(cache.indexOf(entry), 1);
+    if (parent.contains(container)) { parent.removeChild(container); }
   }
 
   function defaultSetter (value) {
     if (textInput) {
-      el.value = value;
+      if (setAppends === true) {
+        el.value += ' ' + value;
+      } else {
+        el.value = value;
+      }
     } else {
-      el.innerHTML = value;
+      if (setAppends === true) {
+        el.innerHTML += ' ' + value;
+      } else {
+        el.innerHTML = value;
+      }
     }
   }
 
-  function defaultRenderer (li, suggestion) {
-    li.innerText = li.textContent = getText(suggestion);
+  function defaultItemRenderer (li, suggestion) {
+    text(li, getText(suggestion));
+  }
+
+  function defaultCategoryRenderer (div, data) {
+    if (data.id !== 'default') {
+      const id = tag('div', 'sey-category-id');
+      div.appendChild(id);
+      text(id, data.id);
+    }
   }
 
   function defaultFilter (q, suggestion) {
-    var text = getText(suggestion) || '';
-    var value = getValue(suggestion) || '';
-    var needle = q.toLowerCase();
-    return fuzzysearch(needle, text.toLowerCase()) || fuzzysearch(needle, value.toLowerCase());
+    const needle = q.toLowerCase();
+    const text = getText(suggestion) || '';
+    if (fuzzysearch(needle, text.toLowerCase())) {
+      return true;
+    }
+    const value = getValue(suggestion) || '';
+    if (typeof value !== 'string') {
+      return false;
+    }
+    return fuzzysearch(needle, value.toLowerCase());
   }
 
   function loopbackToAnchor (text, p) {
-    var result = '';
-    var anchored = false;
-    var start = p.start;
+    let result = '';
+    let anchored = false;
+    let start = p.start;
     while (anchored === false && start >= 0) {
       result = text.substr(start - 1, p.start - start + 1);
       anchored = ranchorleft.test(result);
@@ -447,25 +818,25 @@ function horsey (el, options) {
     }
     return {
       text: anchored ? result : null,
-      start: start
+      start
     };
   }
 
   function filterAnchoredText (q, suggestion) {
-    var position = sell(el);
-    var input = loopbackToAnchor(q, position).text;
+    const position = sell(el);
+    const input = loopbackToAnchor(q, position).text;
     if (input) {
-      return { input: input, suggestion: suggestion };
+      return { input, suggestion };
     }
   }
 
   function appendText (value) {
-    var current = el.value;
-    var position = sell(el);
-    var input = loopbackToAnchor(current, position);
-    var left = current.substr(0, input.start);
-    var right = current.substr(input.start + input.text.length + (position.end - position.start));
-    var before = left + value + ' ';
+    const current = el.value;
+    const position = sell(el);
+    const input = loopbackToAnchor(current, position);
+    const left = current.substr(0, input.start);
+    const right = current.substr(input.start + input.text.length + (position.end - position.start));
+    const before = left + value + ' ';
 
     el.value = before + right;
     sell(el, { start: before.length, end: before.length });
@@ -478,32 +849,23 @@ function horsey (el, options) {
   function appendHTML () {
     throw new Error('Anchoring in editable elements is disabled by default.');
   }
+
+  function findList (category) { return sektor('.sey-list', category)[0]; }
 }
 
 function isInput (el) { return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA'; }
 
-function defaultGetValue (suggestion) {
-  return defaultGet('value', suggestion);
-}
-
-function defaultGetText (suggestion) {
-  return defaultGet('text', suggestion);
-}
-
-function defaultGet (type, value) {
-  return value && value[type] !== void 0 ? value[type] : value;
-}
-
 function tag (type, className) {
-  var el = doc.createElement(type);
+  const el = doc.createElement(type);
   el.className = className;
   return el;
 }
 
 function defer (fn) { return function () { setTimeout(fn, 0); }; }
+function text (el, value) { el.innerText = el.textContent = value; }
 
 function isEditable (el) {
-  var value = el.getAttribute('contentEditable');
+  const value = el.getAttribute('contentEditable');
   if (value === 'false') {
     return false;
   }
@@ -516,5 +878,4 @@ function isEditable (el) {
   return false;
 }
 
-horsey.find = find;
 module.exports = horsey;

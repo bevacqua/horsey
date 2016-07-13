@@ -1,3 +1,7 @@
+# 4.2.1 Vampire
+
+- Completely revamped, see API documentation
+
 # 3.0.0 Live from Liverpool
 
 - Introduced live suggestions
