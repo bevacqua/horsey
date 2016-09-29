@@ -46,7 +46,7 @@ var doc = document;
 var docElement = doc.documentElement;
 
 function horsey(el) {
-  var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   var setAppends = options.setAppends;
   var _set = options.set;
   var filter = options.filter;
@@ -167,7 +167,7 @@ function horsey(el) {
 }
 
 function autocomplete(el) {
-  var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
   var o = options;
   var parent = o.appendTo || doc.body;
@@ -856,6 +856,9 @@ function autocomplete(el) {
     var which = e.which || e.keyCode;
     if (which === KEY_ENTER) {
       return;
+    }
+    if (!visible()) {
+      show();
     }
     deferredFiltering();
   }

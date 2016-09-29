@@ -85,6 +85,17 @@ void function () {
     getValue: 'value'
   });
 
+  horsey(document.querySelector('#zh_CN'), {
+    source: [{ list: [
+      { value: 'javascript', text: 'Javascript 前端后端开发工程师。' },
+      { value: 'python', text: '珍爱生命，我用Python。' },
+      { value: 'php', text: 'PHP是全世界上最好的语言，没有之一。' },
+      { value: 'java', text: '实际上，我的最爱是Java。' }
+    ]}],
+    getText: 'text',
+    getValue: 'value'
+  });
+
   function events (el, type, fn) {
     if (el.addEventListener) {
       el.addEventListener(type, fn);
