@@ -2,7 +2,8 @@
 
 > Progressive and customizable autocomplete component
 
-Browser support includes every sane browser and **IE7+**.
+Browser support includes every sane browser and **IE9+**.
+IE9 will need a polyfill for [Element.classList](https://developer.mozilla.org/en/docs/Web/API/Element/classList)
 
 # Demo!
 
