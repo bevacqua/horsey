@@ -138,6 +138,25 @@ horsey(document.querySelector('div'), {
       </code>
     </pre>
   </div>
+  <!-- for Chinese or other language -->
+  <div class='parent'>
+    <label for='zh_CN'>You can also use in Chinese or other languages: </label>
+    <input id='zh_CN'/>
+    <pre>
+      <code>
+horsey(document.querySelector('#zh_CN'), {
+  source: [{ list: [
+    { value: 'javascript', text: 'Javascript 前端后端开发工程师。' },
+    { value: 'python', text: '珍爱生命，我用Python。' },
+    { value: 'php', text: 'PHP是全世界上最好的语言，没有之一。' },
+    { value: 'java', text: '实际上，我的最爱是Java。' }
+  ]}],
+  getText: 'text',
+  getValue: 'value'
+});
+      </code>
+    </pre>
+  </div>
 </div>
 <h3>Get it on GitHub! <a href='https://github.com/bevacqua/horsey'>bevacqua/horsey</a></h3>
 <script src='dist/horsey.js'></script>
