@@ -858,6 +858,9 @@ function autocomplete(el) {
     if (which === KEY_ENTER) {
       return;
     }
+    if (!visible()) {
+      show();
+    }
     deferredFiltering();
   }
 
