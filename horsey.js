@@ -68,6 +68,7 @@ function horsey (el, options = {}) {
     noMatchesText: options.noMatches,
     blankSearch,
     debounce,
+    selectByDefault: options.selectByDefault !== false,
     set (s) {
       if (setAppends !== true) {
         el.value = '';
@@ -148,7 +149,8 @@ function autocomplete (el, options = {}) {
     highlightCompleteWords = true,
     renderItem = defaultItemRenderer,
     renderCategory = defaultCategoryRenderer,
-    setAppends
+    setAppends,
+    selectByDefault
   } = o;
   const limit = typeof o.limit === 'number' ? o.limit : Infinity;
   const userFilter = o.filter || defaultFilter;
@@ -531,6 +533,10 @@ function autocomplete (el, options = {}) {
     const next = up ? 'previousSibling' : 'nextSibling';
     const prev = up ? 'nextSibling' : 'previousSibling';
     const li = findNext();
+    if (li === null && !selectByDefault) {
+      unselect();
+      return;
+    }
     select(li);
 
     if (hidden(li)) {
@@ -555,6 +561,12 @@ function autocomplete (el, options = {}) {
         if (cat[next] && findList(cat[next])[first]) {
           return findList(cat[next])[first];
         }
+      }
+      if (!selectByDefault) {
+        if (!up && selection === null) {
+          return findList(categories[first])[first];
+        }
+        return null;
       }
       return findList(categories[first])[first];
     }
@@ -642,10 +654,10 @@ function autocomplete (el, options = {}) {
     } else {
       hideNoResults();
     }
-    if (!selection) {
+    if (!selection && selectByDefault) {
       move();
     }
-    if (!selection && !nomatch) {
+    if (!selection && !nomatch && selectByDefault) {
       hide();
     }
     function walkCategories () {
