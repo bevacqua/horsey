@@ -356,13 +356,13 @@ function autocomplete (el, options = {}) {
 
   function breakupForHighlighter (el) {
     getTextChildren(el).forEach(el => {
-      const parent = el.parentElement;
+      const parent = el.parentElement || el.parentNode;
       const text = el.textContent || el.nodeValue || '';
       if (text.length === 0) {
         return;
       }
-      for (let char of text) {
-        parent.insertBefore(spanFor(char), el);
+      for (let i = 0, chars = text.split(''); i < chars.length; i++) {
+        parent.insertBefore(spanFor(chars[i]), el);
       }
       parent.removeChild(el);
       function spanFor (char) {
@@ -377,7 +377,7 @@ function autocomplete (el, options = {}) {
   function highlight (el, needle) {
     const rword = /[\s,._\[\]{}()-]/g;
     const words = needle.split(rword).filter(w => w.length);
-    const elems = [...el.querySelectorAll('.sey-char')];
+    const elems = [].slice.call(el.querySelectorAll('.sey-char'));
     let chars;
     let startIndex = 0;
 
@@ -393,12 +393,14 @@ function autocomplete (el, options = {}) {
     }
 
     function whole () {
-      for (let word of words) {
+      for (let wordIndex = 0, word; wordIndex < words.length; wordIndex++) {
+        const word = words[wordIndex];
         let tempIndex = startIndex;
         retry: while (tempIndex !== -1) {
           let init = true;
           let prevIndex = tempIndex;
-          for (let char of word) {
+          for (let charIndex = 0, chars = word.split(''); charIndex < chars.length; charIndex++) {
+            const char = chars[charIndex];
             const i = chars.indexOf(char, prevIndex + 1);
             const fail = i === -1 || (!init && prevIndex + 1 !== i);
             if (init) {
@@ -410,8 +412,8 @@ function autocomplete (el, options = {}) {
             }
             prevIndex = i;
           }
-          for (let el of elems.splice(tempIndex, 1 + prevIndex - tempIndex)) {
-            on(el);
+          for (let elemIndex = 0, matchedElems = elems.splice(tempIndex, 1 + prevIndex - tempIndex); elemIndex < matchedElems.length; elemIndex++) {
+            on(matchedElems[elemIndex]);
           }
           balance();
           needle = needle.replace(word, '');
@@ -421,10 +423,10 @@ function autocomplete (el, options = {}) {
     }
 
     function fuzzy () {
-      for (let input of needle) {
+      for (let i = 0, chars = needle.split(''); i < chars.length; i++) {
         while (elems.length) {
           let el = elems.shift();
-          if ((el.innerText || el.textContent) === input) {
+          if ((el.innerText || el.textContent) === chars[i]) {
             on(el);
             break;
           } else {

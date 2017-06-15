@@ -34,8 +34,6 @@ var _debounce2 = _interopRequireDefault(_debounce);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 var KEY_BACKSPACE = 8;
 var KEY_ENTER = 13;
 var KEY_ESC = 27;
@@ -405,36 +403,14 @@ function autocomplete(el) {
 
   function breakupForHighlighter(el) {
     getTextChildren(el).forEach(function (el) {
-      var parent = el.parentElement;
+      var parent = el.parentElement || el.parentNode;
       var text = el.textContent || el.nodeValue || '';
       if (text.length === 0) {
         return;
       }
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = text[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var char = _step.value;
-
-          parent.insertBefore(spanFor(char), el);
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
+      for (var i = 0, chars = text.split(''); i < chars.length; i++) {
+        parent.insertBefore(spanFor(chars[i]), el);
       }
-
       parent.removeChild(el);
       function spanFor(char) {
         var span = doc.createElement('span');
@@ -450,7 +426,7 @@ function autocomplete(el) {
     var words = needle.split(rword).filter(function (w) {
       return w.length;
     });
-    var elems = [].concat(_toConsumableArray(el.querySelectorAll('.sey-char')));
+    var elems = [].slice.call(el.querySelectorAll('.sey-char'));
     var chars = void 0;
     var startIndex = 0;
 
@@ -468,128 +444,44 @@ function autocomplete(el) {
     }
 
     function whole() {
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
-
-      try {
-        for (var _iterator2 = words[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var word = _step2.value;
-
-          var tempIndex = startIndex;
-          retry: while (tempIndex !== -1) {
-            var init = true;
-            var prevIndex = tempIndex;
-            var _iteratorNormalCompletion3 = true;
-            var _didIteratorError3 = false;
-            var _iteratorError3 = undefined;
-
-            try {
-              for (var _iterator3 = word[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                var char = _step3.value;
-
-                var i = chars.indexOf(char, prevIndex + 1);
-                var fail = i === -1 || !init && prevIndex + 1 !== i;
-                if (init) {
-                  init = false;
-                  tempIndex = i;
-                }
-                if (fail) {
-                  continue retry;
-                }
-                prevIndex = i;
-              }
-            } catch (err) {
-              _didIteratorError3 = true;
-              _iteratorError3 = err;
-            } finally {
-              try {
-                if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                  _iterator3.return();
-                }
-              } finally {
-                if (_didIteratorError3) {
-                  throw _iteratorError3;
-                }
-              }
+      for (var wordIndex = 0, word; wordIndex < words.length; wordIndex++) {
+        var word = words[wordIndex];
+        var tempIndex = startIndex;
+        retry: while (tempIndex !== -1) {
+          var init = true;
+          var prevIndex = tempIndex;
+          for (var charIndex = 0, _chars = word.split(''); charIndex < _chars.length; charIndex++) {
+            var char = _chars[charIndex];
+            var i = _chars.indexOf(char, prevIndex + 1);
+            var fail = i === -1 || !init && prevIndex + 1 !== i;
+            if (init) {
+              init = false;
+              tempIndex = i;
             }
-
-            var _iteratorNormalCompletion4 = true;
-            var _didIteratorError4 = false;
-            var _iteratorError4 = undefined;
-
-            try {
-              for (var _iterator4 = elems.splice(tempIndex, 1 + prevIndex - tempIndex)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                var _el = _step4.value;
-
-                on(_el);
-              }
-            } catch (err) {
-              _didIteratorError4 = true;
-              _iteratorError4 = err;
-            } finally {
-              try {
-                if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                  _iterator4.return();
-                }
-              } finally {
-                if (_didIteratorError4) {
-                  throw _iteratorError4;
-                }
-              }
+            if (fail) {
+              continue retry;
             }
-
-            balance();
-            needle = needle.replace(word, '');
-            break;
+            prevIndex = i;
           }
-        }
-      } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-            _iterator2.return();
+          for (var elemIndex = 0, matchedElems = elems.splice(tempIndex, 1 + prevIndex - tempIndex); elemIndex < matchedElems.length; elemIndex++) {
+            on(matchedElems[elemIndex]);
           }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
+          balance();
+          needle = needle.replace(word, '');
+          break;
         }
       }
     }
 
     function fuzzy() {
-      var _iteratorNormalCompletion5 = true;
-      var _didIteratorError5 = false;
-      var _iteratorError5 = undefined;
-
-      try {
-        for (var _iterator5 = needle[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-          var input = _step5.value;
-
-          while (elems.length) {
-            var _el2 = elems.shift();
-            if ((_el2.innerText || _el2.textContent) === input) {
-              on(_el2);
-              break;
-            } else {
-              off(_el2);
-            }
-          }
-        }
-      } catch (err) {
-        _didIteratorError5 = true;
-        _iteratorError5 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion5 && _iterator5.return) {
-            _iterator5.return();
-          }
-        } finally {
-          if (_didIteratorError5) {
-            throw _iteratorError5;
+      for (var i = 0, _chars2 = needle.split(''); i < _chars2.length; i++) {
+        while (elems.length) {
+          var _el = elems.shift();
+          if ((_el.innerText || _el.textContent) === _chars2[i]) {
+            on(_el);
+            break;
+          } else {
+            off(_el);
           }
         }
       }
