@@ -60,6 +60,8 @@ function horsey(el) {
   var appendTo = options.appendTo;
   var anchor = options.anchor;
   var debounce = options.debounce;
+  var highlighter = options.highlighter;
+  var highlightCompleteWords = options.highlightCompleteWords;
 
   var caching = options.cache !== false;
   if (!source) {
@@ -106,7 +108,9 @@ function horsey(el) {
       completer.emit('afterSet');
     },
 
-    filter: filter
+    filter: filter,
+    highlighter: highlighter,
+    highlightCompleteWords: highlightCompleteWords
   });
   return completer;
   function noMatches(data) {
