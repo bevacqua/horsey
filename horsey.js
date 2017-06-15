@@ -16,6 +16,7 @@ const KEY_DOWN = 40;
 const KEY_TAB = 9;
 const doc = document;
 const docElement = doc.documentElement;
+let listCounter = 0;
 
 function horsey (el, options = {}) {
   const {
@@ -137,6 +138,7 @@ function horsey (el, options = {}) {
 function autocomplete (el, options = {}) {
   const o = options;
   const parent = o.appendTo || doc.body;
+  const listId = 'sey-list-' + listCounter++;
   const {
     getText,
     getValue,
@@ -210,6 +212,9 @@ function autocomplete (el, options = {}) {
   }
   parent.appendChild(container);
   el.setAttribute('autocomplete', 'off');
+  el.setAttribute('role', 'combobox');
+  el.setAttribute('aria-owns', listId);
+  el.setAttribute('aria-autocomplete', 'list');
 
   if (Array.isArray(source)) {
     loaded(source, false);
@@ -291,6 +296,8 @@ function autocomplete (el, options = {}) {
     function createCategory () {
       const category = tag('div', 'sey-category');
       const ul = tag('ul', 'sey-list');
+      ul.setAttribute('id', listId);
+      ul.setAttribute('role', 'listbox');
       renderCategory(category, data);
       category.appendChild(ul);
       categories.appendChild(category);
@@ -301,6 +308,7 @@ function autocomplete (el, options = {}) {
   function add (suggestion, categoryData) {
     const cat = getCategory(categoryData);
     const li = tag('li', 'sey-item');
+    const suggestionId = listId + '-' + (suggestion.value || suggestion);
     renderItem(li, suggestion);
     if (highlighter) {
       breakupForHighlighter(li);
@@ -309,6 +317,8 @@ function autocomplete (el, options = {}) {
     crossvent.add(li, 'click', clickedSuggestion);
     crossvent.add(li, 'horsey-filter', filterItem);
     crossvent.add(li, 'horsey-hide', hideItem);
+    li.setAttribute('role', 'option');
+    li.setAttribute('id', suggestionId);
     cat.ul.appendChild(li);
     api.source.push(suggestion);
     return li;
@@ -506,6 +516,7 @@ function autocomplete (el, options = {}) {
     if (li) {
       selection = li;
       selection.className += ' sey-selected';
+      el.setAttribute('aria-activedescendant', selection.getAttribute('id'));
     }
   }
 
@@ -513,6 +524,7 @@ function autocomplete (el, options = {}) {
     if (selection) {
       selection.className = selection.className.replace(/ sey-selected/g, '');
       selection = null;
+      el.removeAttribute('aria-activedescendant');
     }
   }
 
