@@ -358,7 +358,7 @@ function autocomplete (el, options = {}) {
 
   function breakupForHighlighter (el) {
     getTextChildren(el).forEach(el => {
-      const parent = el.parentElement;
+      const parent = el.parentNode;
       const text = el.textContent || el.nodeValue || '';
       if (text.length === 0) {
         return;
