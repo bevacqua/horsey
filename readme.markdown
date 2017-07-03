@@ -205,6 +205,7 @@ Name              | Description
 `horsey-show`     | Fired whenever the autocomplete list is displayed
 `horsey-hide`     | Fired whenever the autocomplete list is hidden
 `horsey-filter`   | Fired whenever the autocomplete list is about to be filtered. Useful to prime the filter method
+`horsey-selected` | Fired after an item is selected
 
 ## Usage with [woofmark][7]
 
