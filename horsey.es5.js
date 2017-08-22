@@ -46,20 +46,20 @@ var doc = document;
 var docElement = doc.documentElement;
 
 function horsey(el) {
-  var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-  var setAppends = options.setAppends;
-  var _set = options.set;
-  var filter = options.filter;
-  var source = options.source;
-  var _options$cache = options.cache;
-  var cache = _options$cache === undefined ? {} : _options$cache;
-  var predictNextSearch = options.predictNextSearch;
-  var renderItem = options.renderItem;
-  var renderCategory = options.renderCategory;
-  var blankSearch = options.blankSearch;
-  var appendTo = options.appendTo;
-  var anchor = options.anchor;
-  var debounce = options.debounce;
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var setAppends = options.setAppends,
+      _set = options.set,
+      filter = options.filter,
+      source = options.source,
+      _options$cache = options.cache,
+      cache = _options$cache === undefined ? {} : _options$cache,
+      predictNextSearch = options.predictNextSearch,
+      renderItem = options.renderItem,
+      renderCategory = options.renderCategory,
+      blankSearch = options.blankSearch,
+      appendTo = options.appendTo,
+      anchor = options.anchor,
+      debounce = options.debounce;
 
   var caching = options.cache !== false;
   if (!source) {
@@ -116,8 +116,8 @@ function horsey(el) {
     return data.query.length;
   }
   function sourceFunction(data, done) {
-    var query = data.query;
-    var limit = data.limit;
+    var query = data.query,
+        limit = data.limit;
 
     if (!options.blankSearch && query.length === 0) {
       done(null, [], true);return;
@@ -167,25 +167,25 @@ function horsey(el) {
 }
 
 function autocomplete(el) {
-  var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
   var o = options;
   var parent = o.appendTo || doc.body;
-  var getText = o.getText;
-  var getValue = o.getValue;
-  var form = o.form;
-  var source = o.source;
-  var noMatches = o.noMatches;
-  var noMatchesText = o.noMatchesText;
-  var _o$highlighter = o.highlighter;
-  var highlighter = _o$highlighter === undefined ? true : _o$highlighter;
-  var _o$highlightCompleteW = o.highlightCompleteWords;
-  var highlightCompleteWords = _o$highlightCompleteW === undefined ? true : _o$highlightCompleteW;
-  var _o$renderItem = o.renderItem;
-  var renderItem = _o$renderItem === undefined ? defaultItemRenderer : _o$renderItem;
-  var _o$renderCategory = o.renderCategory;
-  var renderCategory = _o$renderCategory === undefined ? defaultCategoryRenderer : _o$renderCategory;
-  var setAppends = o.setAppends;
+  var getText = o.getText,
+      getValue = o.getValue,
+      form = o.form,
+      source = o.source,
+      noMatches = o.noMatches,
+      noMatchesText = o.noMatchesText,
+      _o$highlighter = o.highlighter,
+      highlighter = _o$highlighter === undefined ? true : _o$highlighter,
+      _o$highlightCompleteW = o.highlightCompleteWords,
+      highlightCompleteWords = _o$highlightCompleteW === undefined ? true : _o$highlightCompleteW,
+      _o$renderItem = o.renderItem,
+      renderItem = _o$renderItem === undefined ? defaultItemRenderer : _o$renderItem,
+      _o$renderCategory = o.renderCategory,
+      renderCategory = _o$renderCategory === undefined ? defaultCategoryRenderer : _o$renderCategory,
+      setAppends = o.setAppends;
 
   var limit = typeof o.limit === 'number' ? o.limit : Infinity;
   var userFilter = o.filter || defaultFilter;
@@ -761,7 +761,7 @@ function autocomplete(el) {
         show();
       }
     } else if (shown) {
-      if (which === KEY_ENTER) {
+      if (which === KEY_ENTER || which === KEY_TAB) {
         if (selection) {
           _crossvent2.default.fabricate(selection, 'click');
         } else {
