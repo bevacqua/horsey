@@ -478,8 +478,8 @@ function autocomplete (el, options = {}) {
   function hidden (li) { return li.className.indexOf('sey-hide') !== -1; }
 
   function show () {
-    eye.refresh();
     if (!visible()) {
+      eye.refresh();
       container.className += ' sey-show';
       crossvent.fabricate(attachment, 'horsey-show');
     }
