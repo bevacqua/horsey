@@ -424,7 +424,7 @@ function autocomplete (el, options = {}) {
       for (let input of needle) {
         while (elems.length) {
           let el = elems.shift();
-          if ((el.innerText || el.textContent) === input) {
+          if ((el.innerText || el.textContent || '').toLocaleLowerCase() === input.toLocaleLowerCase()) {
             on(el);
             break;
           } else {
