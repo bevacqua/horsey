@@ -68,6 +68,8 @@ function horsey (el, options = {}) {
     noMatchesText: options.noMatches,
     blankSearch,
     debounce,
+    highlighter: options.highlighter,
+    highlightCompleteWords: options.highlightCompleteWords,
     set (s) {
       if (setAppends !== true) {
         el.value = '';
