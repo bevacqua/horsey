@@ -209,7 +209,7 @@ function autocomplete (el, options = {}) {
     container.appendChild(noneMatch);
   }
   parent.appendChild(container);
-  el.setAttribute('autocomplete', 'off');
+  el.setAttribute('autocomplete', 'none');
 
   if (Array.isArray(source)) {
     loaded(source, false);
