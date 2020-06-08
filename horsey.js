@@ -750,7 +750,10 @@ function autocomplete (el, options = {}) {
       crossvent[op](attachment, 'keypress', deferredShow);
       crossvent[op](attachment, 'keypress', deferredFiltering);
       crossvent[op](attachment, 'keydown', deferredFilteringNoEnter);
-      crossvent[op](attachment, 'paste', deferredFiltering);
+      crossvent[op](attachment, 'paste', function (ev) {
+        deferredShow(ev);
+        deferredFiltering(ev);
+      });
       crossvent[op](attachment, 'keydown', keydown);
       if (o.autoHideOnBlur) { crossvent[op](attachment, 'keydown', hideOnBlur); }
     } else {
