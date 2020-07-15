@@ -28,7 +28,7 @@
     "crossvent": "1.5.4",
     "fuzzysearch": "1.0.3",
     "hash-sum": "1.0.2",
-    "lodash": "4.13.1",
+    "lodash": "4.17.19",
     "sektor": "1.1.4",
     "sell": "1.0.0"
   },
